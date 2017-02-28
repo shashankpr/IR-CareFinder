@@ -22,5 +22,5 @@
 - Make it fancy!
 
 ### Evaluation: (Song)
-- Ask user to search for suitable doctor (general location or certain illness)
+- Ask user to search for suitable hospital (general location or certain illness)
 - ALSO IS THE CLOSER
