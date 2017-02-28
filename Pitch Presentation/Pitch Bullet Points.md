@@ -1,18 +1,26 @@
-### Exciting:
+### Exciting: (Wouter)
 - This is an age in which we compare everything. Dishwashers yada yada
+
+### State of the Art: (Wouter)
+- Hotel/Airline/Restaurant Comparers
+- ClicinalTrials
+- SHOW BOOKING.COM, CLINICALTRIALS
+
 - There is isn't a good way to find doctors.
 
-### Business Potential:
+### Business Potential: (Sylvia)
 - Poke Sylvia for this
+- India -> PRACTO -> CRAPTON OF FUNDS
 
-### Relevant:
+### Relevant: (Jens)
 - Hospital pages unstructured data
 - Doctors page might be non-existent or different on every hospital page.
 - Trying to make it efficiently accessible in one place.
+- SHOW THE PIPELINE
 
-### State of the Art:
-- Hotel/Airline/Restaurant Comparers
-- ClicinalTrials
+### Timeline (Shahank)
+- Make it fancy!
 
-### Evaluation:
+### Evaluation: (Song)
 - Ask user to search for suitable doctor (general location or certain illness)
+- ALSO IS THE CLOSER
