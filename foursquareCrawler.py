@@ -4,6 +4,7 @@ import random
 import foursquare
 import math
 import openpyxl
+import matplotlib.pyplot as plt
 
 #order: northeast, southwest.
 
@@ -45,18 +46,31 @@ def getHospitalDetails(coorStr,step=0.1):
     workbook=openpyxl.Workbook(write_only=True)
     worksheet = workbook.create_sheet()
 
+    ######
+    xSeq=[]
+    ySeq=[]
+    xxSeq=[]
+    yySeq=[]
+    ######
+
     for i in range(exstep[0]):
         for j in range(exstep[1]):
             nepoint=str([round(coor[0][0]-i*step,2),round(coor[0][1]-j*step,2)])[1:-2]
             swpoint=str([round(coor[0][0]-step*(i+1),2),round(coor[0][1]-step*(j+1),2)])[1:-2]
             print(nepoint,swpoint)
 
+            xSeq.append(round(coor[0][0]-i*step,2))
+            ySeq.append(round(coor[0][1]-j*step,2))
+            xxSeq.append(round(coor[0][0]-step*(i+1),2))
+            yySeq.append(round(coor[0][1]-step*(j+1),2))
+
+
             results=client.venues.search(params={'query':'hospitals','intent':'browse',
                                                'ne':nepoint,
                                                'sw':swpoint})
-
+            print(len(results['venues']))
             for item in results['venues']:
-                print(len(item.keys()))
+
                 tmpDict={}
                 tmpSeq=[]
 
@@ -81,16 +95,18 @@ def getHospitalDetails(coorStr,step=0.1):
                             tmpSeq.append(tmpCon.get(ffea,''))
                         continue
                     tmpSeq.append(tmpDict.get(fea,''))
-
+                print(tmpSeq[1])
                 worksheet.append(tmpSeq)
+
         #     break
         # break
 
             time.sleep(random.randint(2,3))
     workbook.save("foursquare/data.xlsx")
+    plt.scatter(xSeq,ySeq)
+    plt.scatter(xxSeq,yySeq)
+    plt.show()
 
 targetSquare=["40.797480, -73.858479","40.645527, -74.144426"] #new york city
 
-getHospitalDetails(targetSquare)
-
-
+getHospitalDetails(targetSquare,step=0.05)
