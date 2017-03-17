@@ -76,7 +76,7 @@ def getHospitalDetails(coorStr,step=0.1):
             #
 
 
-            results=client.venues.search(params={'query':'hospitals','intent':'browse',
+            results=client.venues.search(params={'query':'hospital','intent':'browse',
                                                'ne':nepoint,
                                                'sw':swpoint})
             print(len(results['venues']))
@@ -109,9 +109,6 @@ def getHospitalDetails(coorStr,step=0.1):
                 print(tmpSeq[1])
                 worksheet.append(tmpSeq)
 
-        #     break
-        # break
-
             time.sleep(random.randint(2,3))
     workbook.save("foursquare/data.xlsx")
 
@@ -119,3 +116,5 @@ def getHospitalDetails(coorStr,step=0.1):
 targetSquare=["40.797480, -73.858479","40.645527, -74.144426"] #new york city
 
 getHospitalDetails(targetSquare,step=0.05)
+
+
