@@ -30,7 +30,6 @@ def extendArea(coor,step):
     return [vdis,hdis]
 
 
-
 def getHospitalDetails(coorStr,step=0.1):
     client = foursquare.Foursquare(client_id='3MYPVCD3D3MT0R0IRFQNT4AG11JS3UOG3BLN35OFTI5NTVMO',
                                    client_secret='1A4PZTRJU5QUBRSNCGYAPFVTUBOVO5Z0WLJJMTONNS254K5M')
@@ -50,36 +49,14 @@ def getHospitalDetails(coorStr,step=0.1):
 
     for i in range(exstep[0]):
         for j in range(exstep[1]):
-            ######
-            xSeq = []
-            ySeq = []
-            xxSeq = []
-            yySeq = []
-            ######
-
-
             nepoint=str([round(coor[0][0]-i*step,2),round(coor[0][1]-j*step,2)])[1:-1]
             swpoint=str([round(coor[0][0]-step*(i+1),2),round(coor[0][1]-step*(j+1),2)])[1:-1]
             print(nepoint,swpoint)
 
-            #
-            # xSeq.append(round(coor[0][0]-i*step,2))
-            # ySeq.append(round(coor[0][1]-j*step,2))
-            # xxSeq.append(round(coor[0][0]-step*(i+1),2))
-            # yySeq.append(round(coor[0][1]-step*(j+1),2))
-            # plt.scatter([coor[0][0],coor[1][0]],[coor[0][1],coor[1][1]])
-            # plt.xlim(coor[0][0]-0.5,coor[1][0]+0.5)
-            # plt.ylim(coor[0][1]-0.5,coor[1][1]+0.5)
-            # plt.scatter(xSeq, ySeq)
-            # plt.scatter(xxSeq, yySeq)
-            # plt.show()
-            #
-
-
             results=client.venues.search(params={'query':'hospital','intent':'browse',
                                                'ne':nepoint,
                                                'sw':swpoint})
-            print(len(results['venues']))
+            print(str(len(results['venues']))+" hospitals in this area")
             for item in results['venues']:
 
                 tmpDict={}
