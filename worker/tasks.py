@@ -14,8 +14,8 @@ def task_crawl_foursquare(metadata):
     :return:
 
     """
-    import FoursquareCrawler
-    crawler = FoursquareCrawler(metadata)
+    from FoursquareCrawler import FourSquareCrawler
+    crawler = FourSquareCrawler(metadata)
     crawler.execute()
 
 

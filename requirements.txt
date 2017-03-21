@@ -1,2 +1,5 @@
+redis
+foursquare
 python-dotenv
 wikipedia
+rq
