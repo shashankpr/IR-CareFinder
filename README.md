@@ -11,10 +11,14 @@ To date, no Web search engine allows to search for hospitals and clinics by the 
 
 ## Tools used
 
+- python-dotenv [https://github.com/theskumar/python-dotenv]
 - rq [http://python-rq.org/]
 - rq-dashboard [https://github.com/eoranged/rq-dashboard]
 
 The rq package give an simple and easy task queue in python. 
 Internally it uses a redis server and doesn't require a special task queue server.
 The queue's can be monitored with the rq-dashboard tool.
+
+To prevent leaking secrets with our source repository we will use so called environment variables.
+By using the dotenv package we can define these variables in a .env file and exclude this from our repo.
 

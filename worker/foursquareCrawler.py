@@ -4,7 +4,8 @@ import random
 import foursquare
 import math
 import openpyxl
-import matplotlib.pyplot as plt
+
+from settings import settings
 
 #order: northeast, southwest.
 
@@ -31,8 +32,8 @@ def extendArea(coor,step):
 
 
 def getHospitalDetails(coorStr,step=0.1):
-    client = foursquare.Foursquare(client_id='3MYPVCD3D3MT0R0IRFQNT4AG11JS3UOG3BLN35OFTI5NTVMO',
-                                   client_secret='1A4PZTRJU5QUBRSNCGYAPFVTUBOVO5Z0WLJJMTONNS254K5M')
+    client = foursquare.Foursquare(client_id=settings['foursquare']['client_id'],
+                                   client_secret=settings['foursquare']['client_secret'])
     coor=str2coor(coorStr)
 
     exstep=extendArea(coor,step)#number of steps in two direction (vertical, horizontal)
@@ -90,8 +91,6 @@ def getHospitalDetails(coorStr,step=0.1):
     workbook.save("foursquare/data.xlsx")
 
 
-targetSquare=["40.797480, -73.858479","40.645527, -74.144426"] #new york city
 
-getHospitalDetails(targetSquare,step=0.05)
 
 
