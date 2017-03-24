@@ -1,5 +1,5 @@
 import time
-
+import HospitalUrlTasks
 
 def task_crawl_foursquare(metadata):
     """
@@ -19,8 +19,11 @@ def task_crawl_foursquare(metadata):
     crawler.execute()
 
 
-def task_find_hospital_url(metadata):
-    import HospitalUrlFinder
+def task_duplicate_hospital(metadata):
+    duplicate_filter = HospitalUrlTasks.HospitalDuplicateChecker(metadata)
+    duplicate_filter.execute()
 
-    finder = HospitalUrlFinder(metadata)
+
+def task_find_hospital_url(metadata):
+    finder = HospitalUrlTasks.HospitalUrlTasks(metadata)
     finder.execute()

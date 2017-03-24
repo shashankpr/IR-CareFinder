@@ -6,7 +6,7 @@ import math
 import logging
 from BaseTask import BaseTask
 from settings import settings
-from tasks import task_find_hospital_url
+from tasks import task_duplicate_hospital
 
 
 class FourSquareCrawler(BaseTask):
@@ -50,7 +50,6 @@ class FourSquareCrawler(BaseTask):
         coor = self._str2coor(coordinate_ne, coordinate_sw)
 
         exstep = self._extend_area(coor, step)  # number of steps in two direction (vertical, horizontal)
-
 
         for i in range(exstep[0]):
             for j in range(exstep[1]):
@@ -108,8 +107,7 @@ class FourSquareCrawler(BaseTask):
     def _output_hospital(self, hospital_data):
         queue = self.queue
         logging.info('Add hospital to task queue')
-        queue.enqueue(task_find_hospital_url, hospital_data)
-
+        queue.enqueue(task_duplicate_hospital, hospital_data)
 
     def _extract_contact_info(self, item_contact):
         contact_info = {
