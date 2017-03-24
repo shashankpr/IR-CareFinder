@@ -1,6 +1,7 @@
 from clinical_trials import Trials
 import zipfile
 import os
+import xmltodict
 
 try:
     from cStringIO import StringIO
@@ -8,25 +9,61 @@ except:
     from StringIO import StringIO
 
 
-class clinical_trials_crawler:
-    def __init__(self, search):
-        self.search_string = search
+class ClinicalTrialsCrawler:
+    # Initialization of the crawler
+    def __init__(self, metadata):
+        self.metadata = metadata
+        self.search_string = self.metadata.get('search')
         self.zip_string = 'Not run yet'
-        self.results = -1
+        self.downloaded = 0
+        self.results = {}
 
+
+    # Extracts the relevant data from a xml dictionary.
+    def _extract_data(self,xmldict):
+        extracted = {}
+        extracted['nct_id'] = xmldict['clinical_study']['id_info']['nct_id']
+        extracted['title'] = xmldict['clinical_study']['brief_title']
+
+        if xmldict['clinical_study'].has_key('location'):
+            extracted['location'] = xmldict['clinical_study']['location']
+
+        if xmldict['clinical_study'].has_key('sponsor'):
+            extracted['sponsor'] = xmldict['clinical_study']['sponsors']
+
+        if xmldict['clinical_study'].has_key('condition_browse'):
+            extracted['conditions_mesh'] = xmldict['clinical_study']['condition_browse']['mesh_term']
+
+        if xmldict['clinical_study'].has_key('condition_browse'):
+            extracted['conditions'] = xmldict['clinical_study']['condition']
+
+        if xmldict['clinical_study'].has_key('keyword'):
+            extracted['keyword'] = xmldict['clinical_study']['keyword']
+
+        return extracted
+
+
+    # Downloads the zip with XML files of the search results.
     def _download_zip(self):
         t = Trials()
         result_string = t.download(self.search_string)
         self.zip_string = StringIO(result_string)
 
+    # Processes the zip with XML files of the search results.
     def _process_zip(self):
         if zipfile.is_zipfile(self.zip_string):
             with zipfile.ZipFile(self.zip_string, "r") as zip_file:
                 members = zip_file.namelist()
-                self.results = len(members)
+                self.downloaded = len(members)
+
                 print('{} search results found for {}').format(len(members), self.search_string)
+
                 for m in members:
                     zip_file.extract(m)
+                    with open(m) as fd:
+                        doc = xmltodict.parse(fd.read())
+                        nct_id = doc['clinical_study']['id_info']['nct_id']
+                        self.results[nct_id] = self._extract_data(doc)
                     os.remove(m)
 
         elif self.zip_string == 'Not run yet':
@@ -37,12 +74,17 @@ class clinical_trials_crawler:
                 raise
 
         else:
-            self.results = 0;
             print('No search results found for ' + self.search_string)
 
-    def execute_search(self):
+    # Executes the downloading and processing of a search result.
+    def execute(self):
         self._download_zip()
         self._process_zip()
 
+    # Returns the amount of results.
     def get_amount_of_results(self):
-        return self.results
+        return len(self.results)
+
+    # Returns the amount of results.
+    def get_downloaded(self):
+        return self.downloaded
