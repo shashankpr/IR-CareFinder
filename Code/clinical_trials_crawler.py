@@ -17,6 +17,10 @@ class ClinicalTrialsCrawler:
         self.zip_string = 'Not run yet'
         self.downloaded = 0
         self.results = {}
+        self.count = 0
+        self.countConditions = 0
+        self.countConditionBrowse = 0
+        self.countKeywords = 0
 
 
     # Extracts the relevant data from a xml dictionary.
@@ -33,12 +37,18 @@ class ClinicalTrialsCrawler:
 
         if xmldict['clinical_study'].has_key('condition_browse'):
             extracted['conditions_mesh'] = xmldict['clinical_study']['condition_browse']['mesh_term']
+            self.countConditionBrowse += 1
 
-        if xmldict['clinical_study'].has_key('condition_browse'):
+        if xmldict['clinical_study'].has_key('condition'):
             extracted['conditions'] = xmldict['clinical_study']['condition']
+            self.countConditions += 1
 
         if xmldict['clinical_study'].has_key('keyword'):
             extracted['keyword'] = xmldict['clinical_study']['keyword']
+            self.countKeywords += 1
+
+        if xmldict['clinical_study'].has_key('condition_browse') or xmldict['clinical_study'].has_key('condition') or xmldict['clinical_study'].has_key('keyword'):
+            self.count += 1
 
         return extracted
 
@@ -88,3 +98,10 @@ class ClinicalTrialsCrawler:
     # Returns the amount of results.
     def get_downloaded(self):
         return self.downloaded
+
+    # Returns the amount of results.
+    def print_count(self):
+        print self.count
+        print('Conditions: {}').format(self.countConditions)
+        print('Condition_browse: {}').format(self.countConditionBrowse)
+        print('Keywords: {}').format(self.countKeywords)
