@@ -16,8 +16,8 @@ class DoctorNames:
         for string in soup.stripped_strings:
             string = string.strip()
             if "D." in string:
-                name = string
-                name = name.split(",")[0]
+                name = string.split(",")[0]
+                title = string.split(",")[1]
                 self.results.append(name)
 
         print self.results
