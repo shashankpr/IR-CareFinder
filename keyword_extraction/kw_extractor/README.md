@@ -5,7 +5,7 @@ A Python implementation of the Rapid Automatic Keyword Extraction (RAKE) algorit
 
 The source code is released under the MIT License.
 
-==================
+
 Keyword Extraction
 ==================
 
