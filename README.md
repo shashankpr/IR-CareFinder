@@ -26,15 +26,6 @@ By using the dotenv package we can define these variables in a .env file and exc
 
 ## installation for development
 
-Make sure you've installed python 2.7 and pip.
-
-
-Install the django framework
-`pip install django`
-
-Install a database
-`sudo apt-get install mariadb-server`
-
-
+Things needed are: redis, mysql-server/mariadb-server.
 
 

@@ -58,7 +58,7 @@ programs = {
     'hospital-url': hospital_url,
 }
 
-if 'program' in args:
+if args.program in programs:
     Models.init_db()
     programs.get(args.program)()
 else:
