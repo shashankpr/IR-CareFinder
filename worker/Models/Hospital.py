@@ -1,4 +1,4 @@
-from pony import orm
+from pony.orm import *
 from Models import db
 
 from nltk.corpus import stopwords
@@ -7,17 +7,14 @@ from slugify import slugify
 
 
 class Hospital(db.Entity):
-    name = orm.Required(str)
-    slug = orm.Required(str)
-    url = orm.Optional(str)
-    # foursquare_id = orm.Optional(str)
-    # contact_facebook = orm.Optional(str)
-    # contact_twitter = orm.Optional(str)
-    # contact_phone = orm.Optional(str)
-    #
-    # location_address = orm.Optional(str)
-    # location_lat = orm.Optional(str)
-    # location_lng = orm.Optional(str)
+    id = PrimaryKey(int, auto=True)
+    #clinical_trials = Set('ClinicalTrial')
+    #doctors = Set('Doctor')
+    name = Required(LongStr)
+    slug = Required(str)
+    url = Optional(LongStr)
+    foursquare_id = Optional(str)
+    raw_data = Optional(LongStr)
 
 
 
