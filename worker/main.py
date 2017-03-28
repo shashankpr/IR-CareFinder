@@ -1,3 +1,6 @@
+from HospitalUrlTasks import HospitalDuplicateChecker
+from Models import init_db
+
 data = {'url': '',
         'contact': {'phone': '', 'twitter': None, 'facebook': ''},
         'location': {
@@ -7,8 +10,6 @@ data = {'url': '',
         'id': u'4eb7dccc7ee5024d8005dac0',
         'name': u"Mt Sinai Hospital, Dr Harbison's office 10 Floor"}
 
-from HospitalUrlTasks import HospitalDuplicateChecker
-from Models import init_db
 
 init_db()
 

@@ -14,7 +14,8 @@ class FourSquareCrawler(BaseTask):
         self.metadata = metadata
 
     def execute(self):
-        self._getHospitalDetails(self.metadata['targetSquare']['NE'], self.metadata['targetSquare']['SW'], self.metadata['step'])
+        self._getHospitalDetails(self.metadata['targetSquare']['NE'], self.metadata['targetSquare']['SW'],
+                                 self.metadata['step'])
 
     # order: northeast, southwest.
 
@@ -64,7 +65,6 @@ class FourSquareCrawler(BaseTask):
                 logging.info(str(len(results['venues'])) + " hospitals in this area")
 
                 for item in results['venues']:
-
                     result = {
                         "id": item['id'],
                         "name": item['name'],
@@ -111,7 +111,7 @@ class FourSquareCrawler(BaseTask):
 
     def _extract_contact_info(self, item_contact):
         contact_info = {
-            "phone" : item_contact.get('formattedPhone', ''),
+            "phone": item_contact.get('formattedPhone', ''),
             "facebook": item_contact.get('facebookName', ''),
             "twitter": item_contact.get('twitter'),
         }
@@ -119,11 +119,8 @@ class FourSquareCrawler(BaseTask):
 
     def _extract_location_info(self, item_location):
         location_info = {
-            "address" : item_location.get('formattedAddress', ''),
+            "address": item_location.get('formattedAddress', ''),
             "lat": item_location.get('lat'),
             "lng": item_location.get('lng'),
         }
         return location_info
-
-
-

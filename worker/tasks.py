@@ -1,6 +1,7 @@
 import time
 import HospitalUrlTasks
 
+
 def task_crawl_foursquare(metadata):
     """
     metadata format:

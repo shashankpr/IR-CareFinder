@@ -8,15 +8,13 @@ from slugify import slugify
 
 class Hospital(db.Entity):
     id = PrimaryKey(int, auto=True)
-    #clinical_trials = Set('ClinicalTrial')
-    #doctors = Set('Doctor')
+    # clinical_trials = Set('ClinicalTrial')
+    # doctors = Set('Doctor')
     name = Required(LongStr)
     slug = Required(str)
     url = Optional(LongStr)
     foursquare_id = Optional(str)
     raw_data = Optional(LongStr)
-
-
 
     @staticmethod
     def normalize(name):
@@ -27,6 +25,3 @@ class Hospital(db.Entity):
         slug = slugify(' '.join(filtered_words))
 
         return slug
-
-
-

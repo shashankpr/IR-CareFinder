@@ -18,6 +18,7 @@ parser.add_argument('--id', action='store', type=int)
 args = parser.parse_args()
 print args
 
+
 def hospital_url():
     if not args.id:
         print 'Please provide an hospital id.'
@@ -36,8 +37,6 @@ def hospital_url():
         task = HospitalUrlEnricher({'id': hospital_id})
         task.execute()
         time.sleep(1)
-
-
 
 
 def foursquare_seeder():
@@ -59,13 +58,8 @@ programs = {
     'hospital-url': hospital_url,
 }
 
-
-if programs.has_key(args.program):
+if 'program' in args:
     Models.init_db()
     programs.get(args.program)()
 else:
     print 'Function not found.'
-
-
-
-

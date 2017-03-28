@@ -1,12 +1,8 @@
-
-
 class BaseTask(object):
-
     __queue = None
 
     def __init__(self, metadata):
         self.metadata = metadata
-
 
     def execute(self):
         raise NotImplementedError
@@ -20,4 +16,3 @@ class BaseTask(object):
             self.__queue = Queue(connection=Redis())
 
         return self.__queue
-

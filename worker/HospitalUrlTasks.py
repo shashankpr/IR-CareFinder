@@ -11,23 +11,21 @@ from bs4 import BeautifulSoup
 
 logging.basicConfig(level=logging.INFO)
 
-class HospitalDuplicateChecker(BaseTask):
 
+class HospitalDuplicateChecker(BaseTask):
     def __init__(self, metadata):
         super(HospitalDuplicateChecker, self).__init__(metadata)
 
     def execute(self):
-
         init_db()
         name = self.metadata['name']
         normalized_name = Hospital.normalize(name)
 
         with db_session:
-             existing_count = count(h for h in Hospital if h.slug == normalized_name)
+            existing_count = count(h for h in Hospital if h.slug == normalized_name)
 
-             if existing_count == 0:
-                 self.add_to_database()
-
+            if existing_count == 0:
+                self.add_to_database()
 
     def add_to_database(self):
         with db_session:
@@ -50,14 +48,13 @@ class HospitalDuplicateChecker(BaseTask):
 
 
 class HospitalUrlEnricher(BaseTask):
-
     def __init__(self, metadata):
 
         self.metadata = metadata
 
     def execute(self):
         with db_session:
-            hospital = Hospital[self.metadata['id']];
+            hospital = Hospital[self.metadata['id']]
 
             wikipedia_page = self.search_wikipedia(hospital.name)
 
@@ -80,7 +77,7 @@ class HospitalUrlEnricher(BaseTask):
 
                 return first_page
             except wikipedia.DisambiguationError:
-                pass # do nothing, just pretend nothing was found
+                pass  # do nothing, just pretend nothing was found
 
         return False
 
@@ -101,5 +98,3 @@ class HospitalUrlEnricher(BaseTask):
 
         else:
             logging.debug("No infobox found")
-
-
