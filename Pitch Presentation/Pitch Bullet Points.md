@@ -9,7 +9,8 @@
 - There is isn't a good way to find doctors.
 
 ### Business Potential: (Sylvia)
-- Poke Sylvia for this
+- searching data for research
+- an appiontment system
 - India -> PRACTO -> CRAPTON OF FUNDS
 
 ### Relevant: (Jens)
@@ -22,5 +23,5 @@
 - Make it fancy!
 
 ### Evaluation: (Song)
-- Ask user to search for suitable doctor (general location or certain illness)
+- Ask user to search for suitable hospital (general location or certain illness)
 - ALSO IS THE CLOSER
