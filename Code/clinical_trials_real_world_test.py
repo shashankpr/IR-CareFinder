@@ -9,10 +9,10 @@ def pytest_generate_tests(metafunc):
             metafunc.parametrize("search_string", hospitals)
 
 def test_realworld(search_string):
-    print search_string
-    with_results = ClinicalTrialsCrawler({'search': search_string})
+    print 'Now searching for ' + search_string
+    with_results = ClinicalTrialsCrawler({'searchClinicalTrials': search_string + 'New York'})
     with_results.execute()
-    with_results.print_count()
+    #with_results.print_count()
     assert (with_results.get_amount_of_results() == with_results.get_downloaded())
 
 

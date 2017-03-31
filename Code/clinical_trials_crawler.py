@@ -2,6 +2,8 @@ from clinical_trials import Trials
 import zipfile
 import os
 import xmltodict
+import logging
+logging.basicConfig(level=logging.INFO)
 
 try:
     from cStringIO import StringIO
@@ -13,45 +15,35 @@ class ClinicalTrialsCrawler:
     # Initialization of the crawler
     def __init__(self, metadata):
         self.metadata = metadata
-        self.search_string = self.metadata.get('search')
         self.zip_string = 'Not run yet'
         self.downloaded = 0
         self.results = {}
-        self.count = 0
-        self.countConditions = 0
-        self.countConditionBrowse = 0
-        self.countKeywords = 0
 
+        if self.metadata.has_key('searchClinicalTrials'):
+            self.search_string = self.metadata.get('searchClinicalTrials')
+        else:
+            try:
+                raise RuntimeError
+            except RuntimeError:
+                logging.error('No property searchClinicalTrials found!')
+                raise
 
     # Extracts the relevant data from a xml dictionary.
-    def _extract_data(self,xmldict):
+    def _extract_data(self, xmldict):
         extracted = {}
         extracted['nct_id'] = xmldict['clinical_study']['id_info']['nct_id']
         extracted['title'] = xmldict['clinical_study']['brief_title']
 
-        if xmldict['clinical_study'].has_key('location'):
-            extracted['location'] = xmldict['clinical_study']['location']
-
-        if xmldict['clinical_study'].has_key('sponsor'):
-            extracted['sponsor'] = xmldict['clinical_study']['sponsors']
-
         if xmldict['clinical_study'].has_key('condition_browse'):
             extracted['conditions_mesh'] = xmldict['clinical_study']['condition_browse']['mesh_term']
-            self.countConditionBrowse += 1
 
         if xmldict['clinical_study'].has_key('condition'):
             extracted['conditions'] = xmldict['clinical_study']['condition']
-            self.countConditions += 1
 
         if xmldict['clinical_study'].has_key('keyword'):
             extracted['keyword'] = xmldict['clinical_study']['keyword']
-            self.countKeywords += 1
-
-        if xmldict['clinical_study'].has_key('condition_browse') or xmldict['clinical_study'].has_key('condition') or xmldict['clinical_study'].has_key('keyword'):
-            self.count += 1
 
         return extracted
-
 
     # Downloads the zip with XML files of the search results.
     def _download_zip(self):
@@ -66,7 +58,7 @@ class ClinicalTrialsCrawler:
                 members = zip_file.namelist()
                 self.downloaded = len(members)
 
-                print('{} search results found for {}').format(len(members), self.search_string)
+                logging.info(('{} search results found for {}').format(self.downloaded, self.search_string))
 
                 for m in members:
                     zip_file.extract(m)
@@ -78,13 +70,13 @@ class ClinicalTrialsCrawler:
 
         elif self.zip_string == 'Not run yet':
             try:
-                raise (RuntimeError)
+                raise RuntimeError
             except RuntimeError:
-                print('Error: download_zip has not been run yet for ' + self.search_string)
+                logging.error('download_zip has not been run yet for ' + self.search_string)
                 raise
 
         else:
-            print('No search results found for ' + self.search_string)
+            logging.debug('No search results found for ' + self.search_string)
 
     # Executes the downloading and processing of a search result.
     def execute(self):
@@ -98,10 +90,3 @@ class ClinicalTrialsCrawler:
     # Returns the amount of results.
     def get_downloaded(self):
         return self.downloaded
-
-    # Returns the amount of results.
-    def print_count(self):
-        print self.count
-        print('Conditions: {}').format(self.countConditions)
-        print('Condition_browse: {}').format(self.countConditionBrowse)
-        print('Keywords: {}').format(self.countKeywords)
