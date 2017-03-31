@@ -73,31 +73,6 @@ class FourSquareCrawler(BaseTask):
                         "location": self._extract_location_info(item['location']),
                     }
 
-                    # tmpDict = {}
-                    # tmpSeq = []
-                    # print item
-                    # # convert from tuples to dictionary
-                    # for chara in item.items():
-                    #     tmpDict[chara[0]] = chara[1]
-                    #
-                    # # get information of interest
-                    # for fea in featureSeq:
-                    #     if fea == 'location':
-                    #         tmpLoc = tmpDict.get(fea, '')
-                    #         for ffea in locSeq:
-                    #             if ffea == 'formattedAddress':
-                    #                 tmpAd = tmpLoc.get(ffea, '')
-                    #                 tmpSeq.append(" ".join(tmpAd))
-                    #                 continue
-                    #             tmpSeq.append(tmpLoc.get(ffea, ''))
-                    #         continue
-                    #     if fea == 'contact':
-                    #         tmpCon = tmpDict.get(fea, '')
-                    #         for ffea in conSeq:
-                    #             tmpSeq.append(tmpCon.get(ffea, ''))
-                    #         continue
-                    #     tmpSeq.append(tmpDict.get(fea, ''))
-
                     logging.info("Found hospital \"{}\"".format(result['name']))
                     self._output_hospital(result)
                     logging.info(result)

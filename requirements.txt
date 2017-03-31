@@ -1,3 +1,5 @@
+xmltodict
+clinical_trials
 pony
 redis
 foursquare

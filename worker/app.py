@@ -1,7 +1,7 @@
 import logging
 from rq import Queue
 from redis import Redis
-from tasks import task_crawl_foursquare
+from tasks import task_crawl_foursquare, task_find_clinical_trials
 import argparse
 from pony.orm import *
 import Models
@@ -14,6 +14,8 @@ parser = argparse.ArgumentParser(description='Best CareFinder commandline interf
 
 parser.add_argument('program', help='hostpital-url, foursquare-seeder')
 parser.add_argument('--id', action='store', type=int)
+q = Queue(connection=Redis())
+
 
 args = parser.parse_args()
 print args
@@ -50,12 +52,27 @@ def foursquare_seeder():
         "step": 0.05
     }
 
-    result = q.enqueue(task_crawl_foursquare, metadata, ttl=-1)
+    q.enqueue(task_crawl_foursquare, metadata, ttl=-1)
 
+def clinical_trials():
+    if not args.id:
+        print 'Please provide an hospital id.'
+        return
+
+    hospital_list = []
+    if args.id == -1:
+        with db_session:
+            hospital_list = select(hospital.id for hospital in Hospital if hospital.url == '')[:]
+    else:
+        hospital_list = [args.id]
+
+    for hospital_id in hospital_list:
+        q.enqueue(task_find_clinical_trials, {'search': hospital_id}, ttl=-1)
 
 programs = {
     'foursquare-seeder': foursquare_seeder,
     'hospital-url': hospital_url,
+    'clinical-trial': clinical_trials,
 }
 
 if args.program in programs:
