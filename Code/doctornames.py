@@ -18,8 +18,7 @@ class DoctorNames:
 
             result = re.match(r'(\D*)M\.?D\.?(\D*)', string)
             if result:
-                name = result.group(1) + ' ' + result.group(2)
-                name = name.split(",")[0]
+                name = result.group(1)
                 self.results.append(name.strip())
 
         print self.results
