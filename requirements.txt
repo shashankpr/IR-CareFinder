@@ -1,1 +1,8 @@
+xmltodict
+clinical_trials
+pony
+redis
+foursquare
+python-dotenv
 wikipedia
+rq
