@@ -3,6 +3,7 @@ import zipfile
 import os
 import xmltodict
 import logging
+
 logging.basicConfig(level=logging.INFO)
 
 try:
@@ -28,20 +29,28 @@ class ClinicalTrialsCrawler:
                 logging.error('No property searchClinicalTrials found!')
                 raise
 
+    # Converts extracted data to list form.
+    def _change_to_list(self, value):
+        if type(value) is not list:
+            value = [value]
+        return value
+
     # Extracts the relevant data from a xml dictionary.
     def _extract_data(self, xmldict):
         extracted = {}
-        extracted['nct_id'] = xmldict['clinical_study']['id_info']['nct_id']
-        extracted['title'] = xmldict['clinical_study']['brief_title']
+        ctdict = xmldict['clinical_study']
 
-        if xmldict['clinical_study'].has_key('condition_browse'):
-            extracted['conditions_mesh'] = xmldict['clinical_study']['condition_browse']['mesh_term']
+        extracted['nct_id'] = ctdict['id_info']['nct_id']
+        extracted['title'] = ctdict['brief_title']
 
-        if xmldict['clinical_study'].has_key('condition'):
-            extracted['conditions'] = xmldict['clinical_study']['condition']
+        if ctdict.has_key('condition_browse'):
+            extracted['conditions_mesh'] = self._change_to_list(ctdict['condition_browse']['mesh_term'])
 
-        if xmldict['clinical_study'].has_key('keyword'):
-            extracted['keyword'] = xmldict['clinical_study']['keyword']
+        if ctdict.has_key('condition'):
+            extracted['conditions'] = self._change_to_list(ctdict['condition'])
+
+        if ctdict.has_key('keyword'):
+            extracted['keyword'] = self._change_to_list(ctdict['keyword'])
 
         return extracted
 
