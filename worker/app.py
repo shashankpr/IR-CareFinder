@@ -1,8 +1,7 @@
 import logging
-from rq import Queue
-from redis import Redis
 from tasks import task_crawl_foursquare, task_find_clinical_trials
 import argparse
+from queue import q
 from pony.orm import *
 import Models
 from Models.Hospital import Hospital
@@ -14,7 +13,6 @@ parser = argparse.ArgumentParser(description='Best CareFinder commandline interf
 
 parser.add_argument('program', help='hostpital-url, foursquare-seeder')
 parser.add_argument('--id', action='store', type=int)
-q = Queue(connection=Redis())
 
 
 args = parser.parse_args()
@@ -42,8 +40,6 @@ def hospital_url():
 
 
 def foursquare_seeder():
-    q = Queue(connection=Redis())
-
     metadata = {
         "targetSquare": {
             'NE': "40.797480, -73.858479",
