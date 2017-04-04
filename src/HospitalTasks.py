@@ -86,7 +86,7 @@ class DuplicateChecker(BaseTask):
 
 class StoreInDB(BaseTask):
     def __init__(self, metadata):
-        super(DuplicateChecker, self).__init__(metadata)
+        super(StoreInDB, self).__init__(metadata)
 
     def execute(self):
         init_db()
@@ -109,7 +109,7 @@ class StoreInDB(BaseTask):
                 # location_lat=self.metadata['location']['lat'],
                 # location_lng=self.metadata['location']['lng'],
                 raw_data=json.dumps(self.metadata),
-                log=json.dump(self.metadata['log'])
+                log=json.dumps(self.metadata['log'])
             )
             commit()
             self.metadata['id'] = h.id
@@ -117,8 +117,7 @@ class StoreInDB(BaseTask):
 
 class WikipediaUrlEnricher(BaseTask):
     def __init__(self, metadata):
-
-        self.metadata = metadata
+        super(WikipediaUrlEnricher, self).__init__(metadata)
 
     def execute(self):
         hospital = self.metadata
