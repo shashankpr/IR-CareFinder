@@ -6,3 +6,5 @@ foursquare
 python-dotenv
 wikipedia
 rq
+nltk
+slugify
