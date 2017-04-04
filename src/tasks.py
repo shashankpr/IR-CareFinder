@@ -12,8 +12,6 @@ def queue_next_tasks(task_function, metadata):
         logging.info('Queue task {0} for {1}'.format(task_function.__name__, task.__name__))
         q.enqueue_call(func=task, args=(metadata,), at_front=True)
 
-    time.sleep(5)
-
 
 def task_crawl_foursquare(metadata):
     """
@@ -53,7 +51,7 @@ def task_hospital_duplicate_detector(metadata):
     if not duplicate_filter.metadata['duplicate']:
         queue_next_tasks(task_hospital_duplicate_detector, duplicate_filter.metadata)
     else:
-        logging.info('{} is a duplicate'.format(metadata['name']))
+        logging.info('{} is a duplicate, so discard.'.format(metadata['name']))
 
 
 def task_hospital_find_url_from_wikipedia(metadata):
@@ -61,6 +59,19 @@ def task_hospital_find_url_from_wikipedia(metadata):
     finder.execute()
 
     queue_next_tasks(task_hospital_find_url_from_wikipedia, finder.metadata)
+
+
+def known_by_google(metadata):
+    return 'is_hospital_google' in metadata
+
+
+def task_hospital_discard_irrelevant(metadata):
+    if known_by_google(metadata):
+        if not metadata['is_hospital_google']:
+            logging.info('Not a hospital according to google, so discard.')
+            return  # discard result
+
+    queue_next_tasks(task_hospital_discard_irrelevant, metadata)
 
 
 def task_save_hospital(metadata):
@@ -82,9 +93,9 @@ def task_find_clinical_trials(metadata):
     :param metadata: 
     :return: 
     """
-
-    crawler = clinical_trials_crawler.ClinicalTrialsCrawler(metadata)
-    crawler.execute()
+    pass
+    # crawler = clinical_trials_crawler.ClinicalTrialsCrawler(metadata)
+    # crawler.execute()
 
 
 def task_crawl_pubmed(metadata):
@@ -97,9 +108,12 @@ def task_crawl_pubmed(metadata):
 Each task should check the the value of pipeline['task_name'] to get a list of tasks to queue next. 
 """
 pipeline = {
-    task_crawl_foursquare: [task_hospital_duplicate_detector],
-    task_hospital_duplicate_detector: [task_hospital_validate_with_knowledge_graph],
-    task_hospital_validate_with_knowledge_graph: [task_hospital_find_url_from_wikipedia],
-    task_hospital_find_url_from_wikipedia: [task_save_hospital],
-    task_save_hospital: [task_crawl_pubmed, task_find_clinical_trials],
+    task_crawl_foursquare:                          [task_hospital_duplicate_detector],
+
+    task_hospital_duplicate_detector:               [task_hospital_validate_with_knowledge_graph],
+    task_hospital_validate_with_knowledge_graph:    [task_hospital_find_url_from_wikipedia],
+    task_hospital_find_url_from_wikipedia:          [task_hospital_discard_irrelevant],
+    task_hospital_discard_irrelevant:               [task_save_hospital],
+
+    task_save_hospital:                             [task_crawl_pubmed, task_find_clinical_trials],
 }
