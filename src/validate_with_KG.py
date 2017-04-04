@@ -3,12 +3,12 @@ import json
 import urllib
 import pprint
 import logging
-
+from settings import settings
 logging.basicConfig(level=logging.DEBUG)
 
 
 def api_call(query_list):
-    api_key = open('api_key.txt').read()
+    api_key = settings['knowledge_graph']['key']
     #query = 'Mount Sinai Beth Israel'
     service_url = 'https://kgsearch.googleapis.com/v1/entities:search'
     #response    = []
