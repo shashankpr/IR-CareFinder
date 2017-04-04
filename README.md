@@ -28,6 +28,7 @@ By using the dotenv package we can define these variables in a .env file and exc
 
 - install redis, mysql-server/mariadb-server
 - install requirements.txt with `pip install -r requirements.txt`
+- install the nltk punkt tokenizer with `python -c "import nltk;nltk.download('punkt')"`
 - create a database with the schema found in `schema.sql`
 - copy `.env_example` to `.env` and fill in the required variables (api keys, usernames, passwords)
 - start a queue worker from the `src` folder with `rq worker -c settings`
