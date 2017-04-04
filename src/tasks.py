@@ -1,6 +1,9 @@
 import time
 import HospitalUrlTasks
 import clinical_trials_crawler
+from pony.orm import *
+from Models import init_db
+from Models import ClinicalTrial
 
 def task_crawl_foursquare(metadata):
     """
@@ -34,7 +37,7 @@ def task_find_clinical_trials(metadata):
     metadata format:
     
     {
-        'search': '',
+        'query': '',
     }
     
     :param metadata: 
@@ -42,5 +45,25 @@ def task_find_clinical_trials(metadata):
     """
     crawler = clinical_trials_crawler.ClinicalTrialsCrawler(metadata)
     crawler.execute()
+
+    init_db()
+    for ct in crawler.results.itervalues():
+        conditions = ', '.join(ct['condition'])
+
+        if ct.has_key('conditions_mesh'):
+            conditions_mesh = ', '.join(ct['conditions_mesh'])
+
+        if ct.has_key('keyword'):
+            keyword = ', '.join(ct['keyword'])
+
+        with db_session:
+            c = ClinicalTrial(
+                id=ct['nct_id'],
+                title=ct['title'],
+                condition = conditions,
+                conditions_mesh = conditions_mesh,
+                keyword = keyword,
+            )
+            commit()
 
 

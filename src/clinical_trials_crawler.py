@@ -20,13 +20,13 @@ class ClinicalTrialsCrawler:
         self.downloaded = 0
         self.results = {}
 
-        if self.metadata.has_key('searchClinicalTrials'):
-            self.search_string = self.metadata.get('searchClinicalTrials')
+        if self.metadata.has_key('query'):
+            self.search_string = self.metadata.get('query')
         else:
             try:
                 raise RuntimeError
             except RuntimeError:
-                logging.error('No property searchClinicalTrials found!')
+                logging.error('No property query found!')
                 raise
 
     # Converts extracted data to list form.
@@ -47,7 +47,7 @@ class ClinicalTrialsCrawler:
             extracted['conditions_mesh'] = self._change_to_list(ctdict['condition_browse']['mesh_term'])
 
         if ctdict.has_key('condition'):
-            extracted['conditions'] = self._change_to_list(ctdict['condition'])
+            extracted['condition'] = self._change_to_list(ctdict['condition'])
 
         if ctdict.has_key('keyword'):
             extracted['keyword'] = self._change_to_list(ctdict['keyword'])
