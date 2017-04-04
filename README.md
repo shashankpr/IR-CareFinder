@@ -37,7 +37,19 @@ By using the dotenv package we can define these variables in a .env file and exc
 *Optional:*
 - start the queue dashboard with `rq-dashboard` and open http://localhost:9181/ in your browser
 
+## Pipeline
+This section will explain the core parts of the pipeline.
+The pipeline uses a queue heavily to make it easy to run the system distributed.
 
+The whole pipeline is initiated by calling `python app.py foursquare-seeder`.
+The `app.py` will put a task on the queue to start crawling foursquare.
+
+### Task foursquare_crawler
+*Input:* NE, SW coordinates
+
+*Output:* nothing
+
+*Side-effect:* Puts for every hospital found a `task_hospital_duplicate_checker` on the queue with all metadata known of the hospital.
 
 
 
