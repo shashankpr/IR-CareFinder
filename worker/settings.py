@@ -10,7 +10,9 @@ settings = {
     },
 
     "redis": {
-
+        "host": environ.get("REDIS_HOST", 'localhost'),
+        "port": environ.get("REDIS_PORT", '6379'),
+        "password": environ.get("REDIS_PASSWORD", ''),
     },
 
     "mysql": {
@@ -20,3 +22,9 @@ settings = {
         "db": environ.get("MYSQL_DB", 'information-retrieval'),
     }
 }
+
+# Setting for `rq worker`
+
+REDIS_HOST = settings['redis']['host']
+REDIS_PORT = settings['redis']['port']
+REDIS_PASSWORD = settings['redis']['password']
