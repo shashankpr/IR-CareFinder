@@ -43,23 +43,21 @@ class KnowledgeGraphValidator(BaseTask):
                 self._check_if_type_hospital(item)
                 self._get_hospital_url(item)
             else:
-                self.metadata['log'].append('Low Google Knowledge Graph Result score ({})'.format(item['resultScore']))
+                self.info('Low Google Knowledge Graph Result score ({})'.format(item['resultScore']))
         else:
-            self.metadata['log'].append('No Google Knowledge Graph Result')
+            self.info('No Google Knowledge Graph Result')
 
     def _check_if_type_hospital(self, element):
         if 'Hospital' in element['result']['@type']:
-            self.metadata['log'].append('Hospital according to Google Knowledge Graph')
-            logging.info("{} is a Hospital".format(element['result']['name']))
+            self.info('Hospital according to Google Knowledge Graph')
+            self.metadata['is_hospital_google'] = True
         else:
-            self.metadata['log'].append('Not a hospital according to Google Knowledge Graph')
-            self.metadata['is_hospital_according_to_google'] = False
-            logging.info("{} is NOT a Hospital".format(element['result']['name']))
+            self.info('Not a hospital according to Google Knowledge Graph')
+            self.metadata['is_hospital_google'] = False
 
     def _get_hospital_url(self, element):
         if 'url' in element['result']:
-            logging.info("Name: {}, URL: {}".format(element['result']['name'], element['result']['url']))
-            self.metadata['log'].append('Google Knowledge Graph found url {}'.format(element['result']['url']))
+            self.info('Google Knowledge Graph found url {}'.format(element['result']['url']))
             self.metadata['url'] = element['result']['url']
 
 
@@ -91,7 +89,16 @@ class StoreInDB(BaseTask):
     def execute(self):
         init_db()
 
-        self.add_to_database()
+        if 'id' in self.metadata:
+            logging.info('Update hospital')
+            self.update_hospital()
+        else:
+            logging.info('Create new hospital')
+            self.add_to_database()
+
+    def update_hospital(self):
+        self.info('update!')
+        raise NotImplemented
 
     def add_to_database(self):
         with db_session:
@@ -99,15 +106,8 @@ class StoreInDB(BaseTask):
                 name=self.metadata['name'],
                 slug=Hospital.normalize(self.metadata['name']),
                 url=self.metadata['url'],
-                foursquare_id=self.metadata['id'],
+                foursquare_id=self.metadata['foursquare-id'],
 
-                # contact_phone=self.metadata['contact']['phone'],
-                # contact_twitter=self.metadata['contact']['twitter'],
-                # contact_facebook=self.metadata['contact']['facebook'],
-                #
-                # location_address=self.metadata['location']['address'],
-                # location_lat=self.metadata['location']['lat'],
-                # location_lng=self.metadata['location']['lng'],
                 raw_data=json.dumps(self.metadata),
                 log=json.dumps(self.metadata['log'])
             )
