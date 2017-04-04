@@ -26,6 +26,17 @@ By using the dotenv package we can define these variables in a .env file and exc
 
 ## installation for development
 
-Things needed are: redis, mysql-server/mariadb-server.
+- install redis, mysql-server/mariadb-server
+- install requirements.txt with `pip install -r requirements.txt`
+- create a database with the schema found in `schema.sql`
+- copy `.env_example` to `.env` and fill in the required variables (api keys, usernames, passwords)
+- start a queue worker from the `src` folder with `rq worker -c settings`
+- in a separate terminal initiate the pipeline with `python app.py foursquare-seeder`
+
+*Optional:*
+- start the queue dashboard with `rq-dashboard` and open http://localhost:9181/ in your browser
+
+
+
 
 
