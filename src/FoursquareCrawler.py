@@ -66,7 +66,7 @@ class FourSquareCrawler(BaseTask):
 
                 for item in results['venues']:
                     result = {
-                        "id": item['id'],
+                        "foursquare-id": item['id'],
                         "name": item['name'],
                         "url": item.get('url', ''),
                         "contact": self._extract_contact_info(item['contact']),
