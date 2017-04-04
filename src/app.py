@@ -22,7 +22,7 @@ print args
 def hospital_url():
     if not args.id:
         print 'Please provide an hospital id.'
-        exit
+        exit()
 
     hospital_list = []
     if args.id == -1:
@@ -31,10 +31,10 @@ def hospital_url():
     else:
         hospital_list = [args.id]
 
-    from HospitalUrlTasks import HospitalUrlEnricher
+    from HospitalTasks import WikipediaUrlEnricher
 
     for hospital_id in hospital_list:
-        task = HospitalUrlEnricher({'id': hospital_id})
+        task = WikipediaUrlEnricher({'id': hospital_id})
         task.execute()
         time.sleep(1)
 
@@ -43,14 +43,15 @@ def foursquare_seeder():
     metadata = {
         "targetSquare": {
             'NE': "40.797480, -73.858479",
-            'SW': "40.645527, -74.144426",
+            # 'SW': "40.645527, -74.144426",
+            'SW': "40.787480, -74.0",
         },
         "step": 0.05
     }
 
     q.enqueue(task_crawl_foursquare, metadata, ttl=-1)
 
-def clinical_trials():
+def clinical_trials(    ):
     if not args.id:
         print 'Please provide an hospital id.'
         return
