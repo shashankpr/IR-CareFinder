@@ -8,7 +8,7 @@ from slugify import slugify
 
 class Hospital(db.Entity):
     id = PrimaryKey(int, auto=True)
-    # clinical_trials = Set('ClinicalTrial')
+    clinical_trials = Set('ClinicalTrial')
     # doctors = Set('Doctor')
     name = Required(LongStr)
     slug = Required(str)
