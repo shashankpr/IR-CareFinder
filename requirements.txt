@@ -6,5 +6,7 @@ foursquare
 python-dotenv
 wikipedia
 rq
+beautifulsoup4
 nltk
 slugify
+

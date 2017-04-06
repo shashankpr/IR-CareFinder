@@ -1,10 +1,21 @@
 import time
-import HospitalUrlTasks
+import HospitalTasks
 import clinical_trials_crawler
 from pony.orm import *
 from Models import init_db
 from Models import ClinicalTrial
 from Models import Hospital
+from queue import q
+import logging
+
+
+def queue_next_tasks(task_function, metadata):
+    tasks = pipeline[task_function]
+
+    for task in tasks:
+        logging.info('Queue task {0} for {1}'.format(task_function.__name__, task.__name__))
+        q.enqueue_call(func=task, args=(metadata,), at_front=True)
+
 
 def task_crawl_foursquare(metadata):
     """
@@ -24,29 +35,61 @@ def task_crawl_foursquare(metadata):
     crawler.execute()
 
 
-def task_duplicate_hospital(metadata):
-    duplicate_filter = HospitalUrlTasks.HospitalDuplicateChecker(metadata)
+def task_hospital_validate_with_knowledge_graph(metadata):
+    """Search for the hospital name in Google Knowledge Graph to check if it is a hospital and get a possible url"""
+    from HospitalTasks import KnowledgeGraphValidator
+    hospital_validator = KnowledgeGraphValidator(metadata)
+    hospital_validator.execute()
+
+    queue_next_tasks(task_hospital_validate_with_knowledge_graph, hospital_validator.metadata)
+
+
+def task_hospital_duplicate_detector(metadata):
+    """Check if the hospital name is already in the database
+    
+    The name is first normalized to make sure small differences don't influence this step.
+    """
+    duplicate_filter = HospitalTasks.DuplicateChecker(metadata)
     duplicate_filter.execute()
 
+    if not duplicate_filter.metadata['duplicate']:
+        queue_next_tasks(task_hospital_duplicate_detector, duplicate_filter.metadata)
+    else:
+        logging.info('{} is a duplicate, so discard.'.format(metadata['name']))
 
-def task_find_hospital_url(metadata):
-    finder = HospitalUrlTasks.HospitalUrlTasks(metadata)
+
+def task_hospital_find_url_from_wikipedia(metadata):
+    finder = HospitalTasks.WikipediaUrlEnricher(metadata)
     finder.execute()
 
+    queue_next_tasks(task_hospital_find_url_from_wikipedia, finder.metadata)
+
+
+def known_by_google(metadata):
+    return 'is_hospital_google' in metadata
+
+
+def task_hospital_discard_irrelevant(metadata):
+    if known_by_google(metadata):
+        if not metadata['is_hospital_google']:
+            logging.info('Not a hospital according to google, so discard.')
+            return  # discard result
+
+    queue_next_tasks(task_hospital_discard_irrelevant, metadata)
+
+
+def task_save_hospital(metadata):
+    from HospitalTasks import StoreInDB
+    saver = StoreInDB(metadata)
+    saver.execute()
+
+    queue_next_tasks(task_save_hospital, saver.metadata)
+
+
 def task_find_clinical_trials(metadata):
-    """
-    metadata format:
-    
-    {
-        'query': '',
-    }
-    
-    :param metadata: 
-    :return: 
-    """
     crawler = clinical_trials_crawler.ClinicalTrialsCrawler(metadata)
     crawler.execute()
-
+    
     init_db()
     for ct in crawler.results.itervalues():
         conditions = ', '.join(ct['condition'])
@@ -72,3 +115,22 @@ def task_find_clinical_trials(metadata):
             commit()
 
 
+def task_crawl_pubmed(metadata):
+    pass
+
+
+
+""" This dictionary defines our pipeline
+
+Each task should check the the value of pipeline['task_name'] to get a list of tasks to queue next. 
+"""
+pipeline = {
+    task_crawl_foursquare:                          [task_hospital_duplicate_detector],
+
+    task_hospital_duplicate_detector:               [task_hospital_validate_with_knowledge_graph],
+    task_hospital_validate_with_knowledge_graph:    [task_hospital_find_url_from_wikipedia],
+    task_hospital_find_url_from_wikipedia:          [task_hospital_discard_irrelevant],
+    task_hospital_discard_irrelevant:               [task_save_hospital],
+
+    task_save_hospital:                             [task_crawl_pubmed, task_find_clinical_trials],
+}

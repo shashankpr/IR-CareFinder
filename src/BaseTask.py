@@ -1,4 +1,6 @@
 from queue import q
+import logging
+
 class BaseTask(object):
     __queue = None
 
@@ -7,6 +9,10 @@ class BaseTask(object):
 
     def execute(self):
         raise NotImplementedError
+
+    def info(self, message):
+        self.metadata['log'].append(message)
+        logging.info(message)
 
     @property
     def queue(self):
