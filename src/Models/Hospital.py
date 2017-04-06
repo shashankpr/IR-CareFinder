@@ -15,6 +15,7 @@ class Hospital(db.Entity):
     url = Optional(LongStr)
     foursquare_id = Optional(str)
     raw_data = Optional(LongStr)
+    log = Optional(LongStr)
 
     @staticmethod
     def normalize(name):

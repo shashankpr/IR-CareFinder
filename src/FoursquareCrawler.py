@@ -6,7 +6,7 @@ import math
 import logging
 from BaseTask import BaseTask
 from settings import settings
-from tasks import task_duplicate_hospital
+from tasks import task_hospital_duplicate_detector
 
 
 class FourSquareCrawler(BaseTask):
@@ -66,11 +66,12 @@ class FourSquareCrawler(BaseTask):
 
                 for item in results['venues']:
                     result = {
-                        "id": item['id'],
+                        "foursquare-id": item['id'],
                         "name": item['name'],
                         "url": item.get('url', ''),
                         "contact": self._extract_contact_info(item['contact']),
                         "location": self._extract_location_info(item['location']),
+                        "log": []
                     }
 
                     logging.info("Found hospital \"{}\"".format(result['name']))
@@ -82,7 +83,7 @@ class FourSquareCrawler(BaseTask):
     def _output_hospital(self, hospital_data):
         queue = self.queue
         logging.info('Add hospital to task queue')
-        queue.enqueue(task_duplicate_hospital, hospital_data)
+        queue.enqueue(task_hospital_duplicate_detector, hospital_data)
 
     def _extract_contact_info(self, item_contact):
         contact_info = {

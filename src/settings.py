@@ -20,7 +20,11 @@ settings = {
         "user": environ.get("MYSQL_USER", 'ir'),
         "pass": environ.get("MYSQL_PASS", 'ir'),
         "db": environ.get("MYSQL_DB", 'information-retrieval'),
-    }
+    },
+
+    "knowledge_graph": {
+        "key": environ.get("GKG_APIKEY"),
+    },
 }
 
 # Setting for `rq worker`
