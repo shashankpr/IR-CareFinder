@@ -16,7 +16,7 @@ def get_hospitals_by_normalized_name(normalized_name):
                 "must": [
                     {
                         "query_string": {
-                            "default_field": "id.keyword",
+                            "default_field": "normalized-name.keyword",
                             "query": normalized_name
                         }
                     }
@@ -26,7 +26,10 @@ def get_hospitals_by_normalized_name(normalized_name):
     }
     res = elastic.search(index="hospital-index", body=search_query)
     logging.info('Elasticsearch returned {} hits'.format(res['hits']['total']))
-    return res['hits']['hits']
+
+    results = [hospital['_source'] for hospital in res['hits']['hits']]
+
+    return results
 
 
 def get_all_hospitals():
@@ -38,6 +41,8 @@ def get_all_hospitals():
 
     res = elastic.search(index="hospital-index", body=search_query)
     logging.info('Elasticsearch returned {} hits'.format(res['hits']['total']))
-    print res['hits']['hits']
-    return res['hits']['hits']
+
+    results = [hospital['_source'] for hospital in res['hits']['hits']]
+
+    return results
 

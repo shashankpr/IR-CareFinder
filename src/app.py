@@ -13,10 +13,11 @@ logging.basicConfig(level=logging.INFO)
 parser = argparse.ArgumentParser(description='Best CareFinder commandline interface.')
 
 parser.add_argument('program', help='hostpital-url, foursquare-seeder')
-parser.add_argument('--id', action='store', type=int)
+parser.add_argument('--id', action='store', type=str)
 parser.add_argument('--task', action='store', type=bool)
 
 args = parser.parse_args()
+
 
 def get_hospital_as_list():
     if not args.id:
@@ -28,9 +29,7 @@ def get_hospital_as_list():
     else:
         results = get_hospitals_by_normalized_name(args.id)
 
-    hospital_list = [result['_source'] for result in results]
-
-    return hospital_list
+    return results
 
 
 def hospital_commandline_function(task_function, executor_function):
