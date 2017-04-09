@@ -22,6 +22,13 @@ settings = {
         "db": environ.get("MYSQL_DB", 'information-retrieval'),
     },
 
+    "elastic": {
+        "host": environ.get("ELASTIC_HOST", 'localhost'),
+        "port": environ.get("ELASTIC_PORT", '9200'),
+        "user": environ.get("ELASTIC_USER", ''),
+        "pass": environ.get("ELASTIC_PASS", ''),
+    },
+
     "knowledge_graph": {
         "key": environ.get("GKG_APIKEY"),
     },

@@ -3,9 +3,8 @@ from tasks import *
 from HospitalTasks import *
 import argparse
 from queue import q
-from pony.orm import *
-import Models
-from Models.Hospital import Hospital
+from elastic import get_all_hospitals, get_hospitals_by_normalized_name
+
 import time
 import json
 
@@ -24,19 +23,20 @@ def get_hospital_as_list():
         print('Please provide an hospital id.')
         exit()
 
-    with db_session:
-        if args.id == -1:
-            hospital_list = select(hospital.raw_data for hospital in Hospital)[:]
-        else:
-            hospital_list = select(hospital.raw_data for hospital in Hospital if hospital.id == args.id)[:]
+    if args.id == -1:
+        results = get_all_hospitals()
+    else:
+        results = get_hospitals_by_normalized_name(args.id)
+
+    hospital_list = [result['_source'] for result in results]
+
     return hospital_list
 
 
 def hospital_commandline_function(task_function, executor_function):
     hospitals = get_hospital_as_list()
 
-    for metadata_json in hospitals:
-        metadata = json.loads(metadata_json)
+    for metadata in hospitals:
         if args.task:
             task_function(metadata)
         else:
@@ -90,7 +90,6 @@ programs = {
 }
 
 if args.program in programs:
-    Models.init_db()
     programs.get(args.program)()
 else:
     print 'Function not found.'
