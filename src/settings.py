@@ -32,6 +32,13 @@ settings = {
     "knowledge_graph": {
         "key": environ.get("GKG_APIKEY"),
     },
+
+    "webdav": {
+        'webdav_hostname': environ.get("WEBDAV_HOSTNAME"),
+        'webdav_root': environ.get("WEBDAV_ROOT"),
+        'webdav_login': environ.get("WEBDAV_LOGIN"),
+        'webdav_password': environ.get("WEBDAV_PASSWORD"),
+    }
 }
 
 # Setting for `rq worker`
