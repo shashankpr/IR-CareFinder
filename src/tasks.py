@@ -143,10 +143,10 @@ def task_crawl_pubmed(metadata):
 Each task should check the the value of pipeline['task_name'] to get a list of tasks to queue next. 
 """
 pipeline = {
-    task_crawl_foursquare:                          [task_hospital_remove_match_keywords],
+    task_crawl_foursquare:                          [task_hospital_duplicate_detector],  # Actually defined in the class
 
-    task_hospital_remove_match_keywords:            [task_hospital_duplicate_detector],
-    task_hospital_duplicate_detector:               [task_hospital_validate_with_knowledge_graph],
+    task_hospital_duplicate_detector:               [task_hospital_remove_match_keywords],
+    task_hospital_remove_match_keywords:            [task_hospital_validate_with_knowledge_graph],
     task_hospital_validate_with_knowledge_graph:    [task_hospital_find_url_from_wikipedia],
     task_hospital_find_url_from_wikipedia:          [task_hospital_discard_irrelevant],
     task_hospital_discard_irrelevant:               [task_save_hospital],
