@@ -42,7 +42,8 @@ class WgetDownloader(BaseTask):
         self._set_status('claimed')
 
     def _run_wget(self):
-        ignore_extensions_list = ['gif', 'jpg', 'jpeg', 'png', 'pdf', 'pptx', 'ppt', 'xls', 'xlsx', 'mp3']
+        ignore_extensions_list = ['doc', 'docx', 'gif', 'jpeg', 'jpg', 'mp3', 'pdf', 'png', 'ppt', 'pptx', 'txt', 'wmv',
+                                  'xls', 'xlsx']
         follow_tags_list = ['a']
 
         command = [
