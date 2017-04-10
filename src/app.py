@@ -59,7 +59,7 @@ def wget_download():
     urls_unique = list(set(urls))
 
     for url in urls_unique:
-        q.enqueue(task_wget_download_hospital, {'url': url}, ttl=-1)
+        q.enqueue(task_wget_download_hospital, {'url': url}, ttl=-1, timeout=86400) #timeout of 24 hours to grab whole site
 
 
 def foursquare_seeder():
