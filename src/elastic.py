@@ -61,7 +61,7 @@ def get_hospitals_by_normalized_name(normalized_name):
                     {
                         "query_string": {
                             "default_field": "normalized-name.keyword",
-                            "query": escapedSeq(normalized_name)
+                            "query": normalized_name
                         }
                     }
                 ]
