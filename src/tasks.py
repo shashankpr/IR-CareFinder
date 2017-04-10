@@ -1,10 +1,6 @@
 import time
 import HospitalTasks
 import clinical_trials_crawler
-from pony.orm import *
-from Models import init_db
-from Models import ClinicalTrial
-from Models import Hospital
 from queue import q
 import logging
 
@@ -79,8 +75,8 @@ def task_hospital_discard_irrelevant(metadata):
 
 
 def task_save_hospital(metadata):
-    from HospitalTasks import StoreInDB
-    saver = StoreInDB(metadata)
+    from HospitalTasks import StoreInElastic
+    saver = StoreInElastic(metadata)
     saver.execute()
 
     queue_next_tasks(task_save_hospital, saver.metadata)
