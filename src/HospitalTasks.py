@@ -68,7 +68,7 @@ class DuplicateChecker(BaseTask):
 
         self.metadata['duplicate'] = False
 
-        res = get_hospitals_by_normalized_name(self.metadata['name'])
+        res = get_hospitals_by_normalized_name(self.metadata['normalized-name'])
 
         if len(res) >= 1:
             self.metadata['log'].append('Duplicate entry')
