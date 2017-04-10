@@ -6,6 +6,9 @@ import logging
 
 
 def queue_next_tasks(task_function, metadata):
+    if task_function not in pipeline:
+        return
+
     tasks = pipeline[task_function]
 
     for task in tasks:
@@ -61,6 +64,14 @@ def task_hospital_find_url_from_wikipedia(metadata):
     queue_next_tasks(task_hospital_find_url_from_wikipedia, finder.metadata)
 
 
+def task_wget_download_hospital(metadata):
+    import WgetDownloader
+    crawler = WgetDownloader.WgetDownloader(metadata)
+    crawler.execute()
+
+    queue_next_tasks(task_wget_download_hospital, crawler.metadata)
+
+
 def known_by_google(metadata):
     return 'is_hospital_google' in metadata
 
@@ -113,7 +124,6 @@ def task_find_clinical_trials(metadata):
 
 def task_crawl_pubmed(metadata):
     pass
-
 
 
 """ This dictionary defines our pipeline

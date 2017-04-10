@@ -53,6 +53,14 @@ def hospital_google_graph():
     hospital_commandline_function(task_hospital_validate_with_knowledge_graph, KnowledgeGraphValidator)
 
 
+def wget_download():
+    results = get_all_hospitals()
+    urls = [h['url'] for h in results]
+    urls_unique = list(set(urls))
+
+    for url in urls_unique:
+        q.enqueue(task_wget_download_hospital, {'url': url}, ttl=-1)
+
 
 def foursquare_seeder():
     metadata = {
@@ -86,6 +94,7 @@ programs = {
     'hospital-wikipedia': hospital_wikipedia,
     'hospital-google': hospital_google_graph,
     'clinical-trial': clinical_trials,
+    'wget-all': wget_download,
 }
 
 if args.program in programs:

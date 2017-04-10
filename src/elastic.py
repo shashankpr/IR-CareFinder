@@ -36,7 +36,8 @@ def get_all_hospitals():
     search_query = {
         "query": {
             "match_all": {}
-        }
+        },
+        "size": 10000
     }
 
     res = elastic.search(index="hospital-index", body=search_query)
