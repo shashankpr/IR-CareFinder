@@ -138,5 +138,5 @@ pipeline = {
     task_hospital_find_url_from_wikipedia:          [task_hospital_discard_irrelevant],
     task_hospital_discard_irrelevant:               [task_save_hospital],
 
-    task_save_hospital:                             [task_crawl_pubmed, task_find_clinical_trials],
+    task_save_hospital: [], #task_crawl_pubmed, task_find_clinical_trials
 }
