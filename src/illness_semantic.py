@@ -1,6 +1,7 @@
 import logging
 from bs4 import BeautifulSoup
 import urllib2
+import json
 
 logging.basicConfig(filename='graph.log', filemode='w', level=logging.DEBUG)
 
@@ -120,6 +121,7 @@ def find_governing_body(url):
     return org_name
 
 def find_illnesses(disease_type):
+    illness_semantic_dict = {}
 
     for category_names, links in disease_type:
         #logging.info("Names : {}, Links: {}" .format(category_names, links))
@@ -128,9 +130,11 @@ def find_illnesses(disease_type):
         soup = BeautifulSoup(page_html, 'html.parser')
         sub_illness_section = soup.find('div', attrs={'id':'tpgp'})
 
-        relation_type   = "RelatedTo"
-        relation_type_2 = "IsTypeOf"
-        relation_type_3 = "GovernedBy"
+        relation_type   = "relatedTo"
+        relation_type_4 = "subRelatedTo"
+        relation_type_2 = "isTypeOf"
+        relation_type_3 = "instGovernedBy"
+        main_relation =  "illnessName"
 
         sub_illness_list    =   []
         related_topics      =   []
@@ -139,6 +143,7 @@ def find_illnesses(disease_type):
         encyclo_list        =   []
         related_health_list =   []
         health_institute    =   ''
+        #illness_semantic_dict = {}
 
 
         for list in sub_illness_section.find_all('li'):
@@ -159,10 +164,23 @@ def find_illnesses(disease_type):
                 health_institute    =   find_governing_body(illness_link)
 
             sub_illness_list.append(sub_illness_name)
-            logging.info("{}, {}, {}, {}, {}, {}, {}, {}, {}" .format(main_illness_name, relation_type,
-                                                                      sub_illness_name, relation_type, related_topics,
-                                                                      relation_type_2, category_names, relation_type_3,
-                                                                      health_institute ))
+            #logging.info("{}, {}, {}, {}, {}, {}, {}, {}, {}" .format(main_illness_name, relation_type,
+            #                                                          sub_illness_name, relation_type, related_topics,
+            #                                                          relation_type_2, category_names, relation_type_3,
+            #                                                          health_institute ))
+
+            illness_semantic_dict[main_relation] = main_illness_name
+            illness_semantic_dict[relation_type] = sub_illness_name
+            illness_semantic_dict[relation_type_4] = related_topics
+            illness_semantic_dict[relation_type_2] = category_names
+            illness_semantic_dict[relation_type_3] = health_institute
+
+            logging.debug("{}". format(illness_semantic_dict))
+
+    with open('data.json', 'a') as fp:
+        json.dump(illness_semantic_dict, fp, sort_keys=True, indent=4)
+
+    return illness_semantic_dict
 
 
 disease_type = find_health_topics(page)
