@@ -1,103 +1,102 @@
+# coding=utf-8
 import requests
 from bs4 import BeautifulSoup
 import re
+import logging
 
-#one instance for one hospital
+
+# one instance for one hospital
 class doc_craw:
+    def __init__(self, ori_url, page_limit=5, thres=0.8):
+        self.ori_url = ori_url
+        self.page_limit = page_limit
+        self.pattern_button1 = re.compile('\s*(?i)(find)?\s?(a)?\s?doctor\s*')
+        self.pattern_button2 = re.compile('\s*(?i)(find)?\s?(a)?\s?physician(s)?\s*')
+        self.pattern_MD = re.compile("(\W+)M\.?D\.?(\W*)")
+        self.doc_links = {}  # doctor name: doctor url
+        self.thres = thres  # judge whether it is a general search or a doctor name search
+        self.base_soup = BeautifulSoup(requests.get(ori_url).text, 'lxml')
+        self.button_soup = ''
 
-    def __init__(self,ori_url,page_limit=5,thres=0.8):
-        self.ori_url=ori_url
-        self.page_limit=page_limit
-        self.pattern_button1=re.compile('\s*(?i)(find)?\s?(a)?\s?doctor\s*')
-        self.pattern_button2=re.compile('\s*(?i)(find)?\s?(a)?\s?physician(s)?\s*')
-        self.pattern_MD=re.compile("(\W+)M\.?D\.?(\W*)")
-        self.doc_links={}  #doctor name: doctor url
-        self.thres=thres #judge whether it is a general search or a doctor name search
-        self.base_soup=BeautifulSoup(requests.get(ori_url).text,'lxml')
-        self.button_soup=''
-
-
-    #the input url has to be the search result list
+    # the input url has to be the search result list
     # search for all M.D. in this website
     # and check whether there is a list containing the MDs
     # if so, count the total number of items in the list
-    def check_list(self,url, page_count=0):
-        print('good',url)
-        if page_count>=self.page_limit:
-            return #stop recursion
+    def check_list(self, url, page_count=0):
+        logging.info('-> check_list({}, {})'.format(url, page_count))
+
+        if page_count >= self.page_limit:
+            return  # stop recursion
 
         r = requests.get(url)
         soup = BeautifulSoup(r.text, 'lxml')
 
-        #1.add all the doctor name's link in this page to the list
+        # 1.add all the doctor name's link in this page to the list
         l_soup = soup.find_all(text=self.pattern_MD)
-        print(len(l_soup),"doctors found")
+        logging.info(len(l_soup), "doctors found")
 
-        if len(l_soup)==0:
+        if len(l_soup) == 0:
             self.check_form(url)
-            print("check form")
+            logging.info("check form")
             return
         for item in l_soup:
-            print(item)
+            logging.info(item)
             try:
-                tmp_link=item.find_parent("a")['href']
+                tmp_link = item.find_parent("a")['href']
             except:
-                tmp_link=''
-            self.doc_links[item.strip()]=tmp_link
+                tmp_link = ''
+            self.doc_links[item.strip()] = tmp_link
 
-        #check whether it is a general search in the first page
-        #now only works for lists.
-        #for tables it won't work
-        if page_count==0:
+        # check whether it is a general search in the first page
+        # now only works for lists.
+        # for tables it won't work
+        if page_count == 0:
             block = l_soup[0]
-            # print(block.find_next_sibling('a'))
+            # logging.info(block.find_next_sibling('a'))
             for i in range(15):  # 9
-                print("-------------------------")
+                logging.info("-------------------------")
                 block = block.parent
                 # tmp = str(block.find_next_sibling('div'))
                 tmp = str(block.find_next_sibling())
 
-
                 if tmp is not None and l_soup[1] in tmp:
                     break
-            print(block.name, block.get('class', ''))
+            logging.info(block.name, block.get('class', ''))
 
             # next_block = block.find_next_sibling('div')
             next_block = block.find_next_sibling()
 
-
             next_count = 0
             while next_block is not None and next_block.get("class", '') == block.get('class', ''):
-                print(next_block.get('class'))
+                logging.info(next_block.get('class'))
                 next_count += 1
                 next_block = next_block.find_next_sibling('div')
 
-            print("next->front")
+            logging.info("next->front")
 
             prev_block = block.find_previous_sibling('div')
             prev_count = 0
             while prev_block is not None and prev_block.get("class", '') == block.get('class', ''):
-                print(prev_block.get('class'))
+                logging.info(prev_block.get('class'))
                 prev_count += 1
                 prev_block = prev_block.find_previous_sibling('div')
 
             count = next_count + prev_count + 1
-            print("count", count)
+            logging.info("count", count)
 
-            if len(l_soup) / count <=self.thres:
-                #this page is generated by general search
+            if len(l_soup) / count <= self.thres:
+                # this page is generated by general search
                 # pass
                 return
 
-
         ####################next page
 
-        #find the url to the next page
-        ch_page = soup.find_all(text=["next", "Next","»"])
-        print(len(ch_page)) #there might be multiple a tag with "next"
-        if len(ch_page)==0:
+        # find the url to the next page
+        ch_page = soup.find_all(text=["next", "Next", "»"])
+        logging.info(len(ch_page))  # there might be multiple a tag with "next"
+        if len(ch_page) == 0:
             return
-        p_a_href=''
+        p_a_href = ''
         for item in ch_page:
             try:
                 p_a_href = item.find_parent("a")['href']
@@ -106,96 +105,107 @@ class doc_craw:
 
             valid = re.compile("\S+" + "page")
             if valid.match(p_a_href):
-                print(p_a_href)
-                p_a_href=self.complete_url(p_a_href)
+                logging.info(p_a_href)
+                p_a_href = self.complete_url(p_a_href)
                 # if "http" not in p_a_href:
                 #     #incomlete url, need to be changed
                 #     base_url=re.search(re.compile("^\S+/"),url).group()
                 #     p_a_href=base_url[:-1]+p_a_href
 
-                # print("success")
-        if p_a_href=='':
+                # logging.info("success")
+        if p_a_href == '':
             return
-        self.check_list(p_a_href,page_count+1)
+        self.check_list(p_a_href, page_count + 1)
 
-    def complete_url(self,url):
+    def complete_url(self, url):
+        logging.info('-> complete_url({})'.format(url))
         if "http" not in url:
             # incomlete url, need to be changed
-            base_url = self.ori_url[:-1] if self.ori_url[-1]=='/' else self.ori_url
-            return base_url+url
+            base_url = self.ori_url[:-1] if self.ori_url[-1] == '/' else self.ori_url
+            return str(base_url) + str(url)
         else:
             return url
 
-
-    #main page -> doctors page, through button
+    # main page -> doctors page, through button
     def check_button(self):
+        logging.info('-> check_button()')
+        # double check
+        a_result = self.base_soup.find_all(text=self.pattern_button1)  # call doctor
+        if len(a_result) == 0:
+            a_result = self.base_soup.find_all(text=self.pattern_button2)  # call physician
 
-        #double check
-        a_result = self.base_soup.find_all(text=self.pattern_button1) #call doctor
-        if len(a_result)==0:
-            a_result=self.base_soup.find_all(text=self.pattern_button2) #call physician
-
-        print(len(a_result))
+        logging.info('Results {}'.format(len(a_result)))
 
         for item in a_result:
+            logging.info('Loop iteration')
             # #for test
             # doc_ref = item.find_parent("a")['href']
-            # print(doc_ref)
-            # self.button_soup=BeautifulSoup(requests.get(self.complete_url(doc_ref)).text,'lxml')
+            # logging.info(doc_ref)
+
             # self.check_list(self.complete_url(doc_ref))
             # return
 
-            #for normal run
+            # for normal run
             try:
-                #get the url and go to the doctors page
-                doc_ref=item.find_parent("a")['href']
-                print(doc_ref)
+                # get the url and go to the doctors page
+                parent = item.find_parent("a")
+                if parent is None or 'href' not in parent:
+                    continue
+
+                doc_ref = parent['href']
+                self.button_soup=BeautifulSoup(requests.get(self.complete_url(doc_ref)).text,'lxml')
+                logging.info(type(doc_ref))
                 self.check_list(self.complete_url(doc_ref))
-                return #currently only check the first button
-            except:
+                return  # currently only check the first button
+            except NotImplementedError:
                 continue
 
-        #if there is no such button on the main page, look for a search box
-        self.check_form(self,self.ori_url)
+        # if there is no such button on the main page, look for a search box
+        self.check_form(self.ori_url)
 
-    #look for search box, and check for its search results.
-    def check_form(self,url,search_term=''):
-
-        r=requests.get(url)
-        soup=BeautifulSoup(r.text,"lxml")
-        forms=soup.find_all("input")
+    # look for search box, and check for its search results.
+    def check_form(self, url, search_term=''):
+        logging.info('-> check_form({}, {})'.format(url, search_term))
+        r = requests.get(url)
+        soup = BeautifulSoup(r.text, "lxml")
+        forms = soup.find_all("input")
         for item in forms:
-            tmp_pre=item.find_parent("form").get("action",'')
-            tmp_mea=item.get('name','')
-            if tmp_mea==['s','q','search']:
+            tmp_pre = item.find_parent("form").get("action", '')
+            tmp_mea = item.get('name', '')
+            if tmp_mea == ['s', 'q', 'search']:
                 # rr=requests.get(self.complete_url(tmp_pre)+"?"+tmp_mea+"="+search_term)
                 # r_soup=BeautifulSoup(rr.text,'lxml')
                 try:
-                    self.check_list(self.complete_url(tmp_pre)+"?"+tmp_mea+"="+search_term)
-                    return#currently only check the first successful search
+                    self.check_list(self.complete_url(tmp_pre) + "?" + tmp_mea + "=" + search_term)
+                    return  # currently only check the first successful search
                 except:
-                    #if the url is wrong
+                    # if the url is wrong
                     continue
             else:
                 continue
-            # print(tmp_pre,item.get("name",''))
+                # logging.info(tmp_pre,item.get("name",''))
         self.check_alpha()
 
-    #look for doctors indexed by alphabet
+    # look for doctors indexed by alphabet
     def check_alpha(self):
         # r=requests.get(url)
-        print("alpha")
+        logging.info("alpha")
         # soup=BeautifulSoup(r.text,'lxml')
 
 
-        alpha_dict={}
-        alpha_list=[chr(i) for i in range(97,123)]
+        alpha_dict = {}
+        alpha_list = [chr(i) for i in range(97, 123)]
         for ch in alpha_list:
-            print(ch)
-            tmp=self.button_soup.find('a',text=re.compile('^(?i)'+'a'+'$'))
+            logging.info(ch)
+            tmp = self.button_soup.find('a', text=re.compile('^(?i)' + 'a' + '$'))
             if tmp is not None:
-                alpha_dict[ch]=tmp.get('href','')
+                alpha_dict[ch] = tmp.get('href', '')
 
         for item in alpha_dict.values():
             self.check_list(self.complete_url(item))
 
+
+if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
+    c = doc_craw('http://www.holyname.org/')
+    c.check_button()
