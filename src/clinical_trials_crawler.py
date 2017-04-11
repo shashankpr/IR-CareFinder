@@ -21,13 +21,13 @@ class ClinicalTrialsCrawler:
         self.results = {}
         self.metadata['results'] = {}
 
-        if self.metadata.has_key('query'):
-            self.search_string = self.metadata.get('query')
+        if self.metadata.has_key('normalized-name'):
+            self.search_string = self.metadata.get('normalized-name')
         else:
             try:
                 raise RuntimeError
             except RuntimeError:
-                logging.error('No property query found!')
+                logging.error('No property normalized-name found!')
                 raise
 
     # Converts extracted data to list form.
