@@ -34,6 +34,7 @@ escapeRules = {'+': r'\+',
                ';': r'\;',
                ' ': r'\ '}
 
+
 def escapedSeq(term):
     """ Yield the next string based on the
         next character (either this char
@@ -44,11 +45,13 @@ def escapedSeq(term):
         else:
             yield char
 
+
 def escapeSolrArg(term):
     """ Apply escaping to the passed in query terms
         escaping special characters like : , etc"""
-    term = term.replace('\\', r'\\')   # escape \ first
+    term = term.replace('\\', r'\\')  # escape \ first
     return "".join([nextStr for nextStr in escapedSeq(term)])
+
 
 ###############################
 
@@ -68,7 +71,7 @@ def get_hospitals_by_normalized_name(normalized_name):
             }
         }
     }
-    res = elastic.search(index="hospital-index", body=search_query)
+    res = elastic.search(index="hospital-index", body=search_query, size=10000)
     logging.info('Elasticsearch returned {} hits'.format(res['hits']['total']))
 
     results = [hospital['_source'] for hospital in res['hits']['hits']]
@@ -80,14 +83,13 @@ def get_all_hospitals():
     search_query = {
         "query": {
             "match_all": {}
-        },
-        "size": 10000
+        }
     }
 
-    res = elastic.search(index="hospital-index", body=search_query)
+    res = elastic.search(index="hospital-index", body=search_query, size=10000)
+
     logging.info('Elasticsearch returned {} hits'.format(res['hits']['total']))
 
     results = [hospital['_source'] for hospital in res['hits']['hits']]
 
     return results
-

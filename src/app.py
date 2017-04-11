@@ -1,12 +1,13 @@
 import logging
+
 from tasks import *
-from HospitalTasks import *
+from HospitalWorkers import *
+from ClinicalTrialWorker import *
 import argparse
-from queue import q
+from queue_helper import q
 from elastic import get_all_hospitals, get_hospitals_by_normalized_name
 
 import time
-import json
 
 logging.basicConfig(level=logging.INFO)
 
@@ -24,7 +25,7 @@ def get_hospital_as_list():
         print('Please provide an hospital id.')
         exit()
 
-    if args.id == -1:
+    if args.id == 'all':
         results = get_all_hospitals()
     else:
         results = get_hospitals_by_normalized_name(args.id)
@@ -36,6 +37,7 @@ def hospital_commandline_function(task_function, executor_function):
     hospitals = get_hospital_as_list()
 
     for metadata in hospitals:
+        print metadata['name']
         if args.task:
             task_function(metadata)
         else:
@@ -54,17 +56,7 @@ def hospital_google_graph():
 
 
 def hospital_match_keywords():
-    hospitals = get_all_hospitals()
-
-    for hospital in hospitals:
-        metadata = hospital
-        keywords = ['veterinary', 'animal', 'department', 'floor', 'cafe', 'mta', 'cafeteria', 'food', 'parking',
-                    'room', 'office']
-
-        for keyword in keywords:
-            if keyword in metadata['name'].lower():
-                logging.info('Keyword {} found in {}'.format(keyword, metadata['name']))
-                break
+    hospital_commandline_function(task_hospital_remove_match_keywords, None)
 
 
 def wget_download():
@@ -73,7 +65,8 @@ def wget_download():
     urls_unique = list(set(urls))
 
     for url in urls_unique:
-        q.enqueue(task_wget_download_hospital, {'url': url}, ttl=-1, timeout=86400) #timeout of 24 hours to grab whole site
+        q.enqueue(task_wget_download_hospital, {'url': url}, ttl=-1,
+                  timeout=86400)  # timeout of 24 hours to grab whole site
 
 
 def foursquare_seeder():
@@ -81,26 +74,25 @@ def foursquare_seeder():
         "targetSquare": {
             'NE': "40.797480, -73.858479",
             'SW': "40.645527, -74.144426",
-            #'SW': "40.787480, -74.0",
+            # 'SW': "40.787480, -74.0",
         },
         "step": 0.05
     }
 
     q.enqueue(task_crawl_foursquare, metadata, ttl=-1)
 
-def clinical_trials(    ):
-    hospitals = get_hospital_as_list()
 
-    for metadata in hospitals:
-        logging.info(metadata.keys())
-        q.enqueue(task_find_clinical_trials, {'query': hospital_id}, ttl=-1)
+def clinical_trials():
+    hospital_commandline_function(task_find_clinical_trials, ClinicalTrialsCrawler)
+
 
 programs = {
     'foursquare-seeder': foursquare_seeder,
     'hospital-wikipedia': hospital_wikipedia,
     'hospital-google': hospital_google_graph,
-    'clinical-trial': clinical_trials,
+    'clinical-trials': clinical_trials,
     'wget-all': wget_download,
+
     'match-keywords': hospital_match_keywords,
 }
 

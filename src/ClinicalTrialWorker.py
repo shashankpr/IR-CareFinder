@@ -3,6 +3,8 @@ import zipfile
 import os
 import xmltodict
 import logging
+from elastic import elastic
+from BaseTask import BaseTask
 
 logging.basicConfig(level=logging.INFO)
 
@@ -12,26 +14,21 @@ except:
     from StringIO import StringIO
 
 
-class ClinicalTrialsCrawler:
+class ClinicalTrialsCrawler(BaseTask):
     # Initialization of the crawler
     def __init__(self, metadata):
         self.metadata = metadata
         self.zip_string = 'Not run yet'
         self.downloaded = 0
-        self.results = {}
-        self.metadata['results'] = {}
+        self.results = []
+        self.metadata['clinicaltrials'] = {}
+        logging.info('Start for {}'.format(metadata['name']))
 
-        if self.metadata.has_key('normalized-name'):
-            self.search_string = self.metadata.get('normalized-name')
-        else:
-            try:
-                raise RuntimeError
-            except RuntimeError:
-                logging.error('No property normalized-name found!')
-                raise
+        self.search_string = self.metadata['name']
 
-    # Converts extracted data to list form.
+
     def _change_to_list(self, value):
+        """Converts extracted data to list form."""
         if type(value) is not list:
             value = [value]
         return value
@@ -75,10 +72,10 @@ class ClinicalTrialsCrawler:
                     with open(m) as fd:
                         doc = xmltodict.parse(fd.read())
                         nct_id = doc['clinical_study']['id_info']['nct_id']
-                        self.results[nct_id] = self._extract_data(doc)
+                        self.results.append(self._extract_data(doc))
                     os.remove(m)
 
-            self.metadata['results'] = self.results
+            self.metadata['clinicaltrials'] = self.results
 
         elif self.zip_string == 'Not run yet':
             try:
@@ -102,3 +99,13 @@ class ClinicalTrialsCrawler:
     def get_downloaded(self):
         return self.downloaded
 
+
+class StoreCTInElastic(BaseTask):
+    def __init__(self, metadata):
+        super(StoreCTInElastic, self).__init__(metadata)
+
+    def execute(self):
+        for ct in self.metadata['clinicaltrials']:
+            ct_id = ct['nct_id']
+
+            elastic.index(index="clinicaltrails-index", doc_type='clinicaltrial', id=ct_id, body=ct)

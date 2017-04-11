@@ -1,19 +1,7 @@
-import time
-import HospitalTasks
-import clinical_trials_crawler
-from queue import q
+from queue_helper import q
+import HospitalWorkers
 import logging
-
-
-def queue_next_tasks(task_function, metadata):
-    if task_function not in pipeline:
-        return
-
-    tasks = pipeline[task_function]
-
-    for task in tasks:
-        logging.info('Queue task {0} for {1}'.format(task_function.__name__, task.__name__))
-        q.enqueue_call(func=task, args=(metadata,), at_front=True)
+import ClinicalTrialWorker
 
 
 def task_crawl_foursquare(metadata):
@@ -29,14 +17,14 @@ def task_crawl_foursquare(metadata):
     :return:
 
     """
-    from FoursquareCrawler import FourSquareCrawler
+    from FoursquareWorker import FourSquareCrawler
     crawler = FourSquareCrawler(metadata)
     crawler.execute()
 
 
 def task_hospital_validate_with_knowledge_graph(metadata):
     """Search for the hospital name in Google Knowledge Graph to check if it is a hospital and get a possible url"""
-    from HospitalTasks import KnowledgeGraphValidator
+    from HospitalWorkers import KnowledgeGraphValidator
     hospital_validator = KnowledgeGraphValidator(metadata)
     hospital_validator.execute()
 
@@ -48,7 +36,7 @@ def task_hospital_duplicate_detector(metadata):
     
     The name is first normalized to make sure small differences don't influence this step.
     """
-    duplicate_filter = HospitalTasks.DuplicateChecker(metadata)
+    duplicate_filter = HospitalWorkers.DuplicateChecker(metadata)
     duplicate_filter.execute()
 
     if not duplicate_filter.metadata['duplicate']:
@@ -70,7 +58,7 @@ def task_hospital_remove_match_keywords(metadata):
 
 
 def task_hospital_find_url_from_wikipedia(metadata):
-    finder = HospitalTasks.WikipediaUrlEnricher(metadata)
+    finder = HospitalWorkers.WikipediaUrlEnricher(metadata)
     finder.execute()
 
     queue_next_tasks(task_hospital_find_url_from_wikipedia, finder.metadata)
@@ -83,6 +71,19 @@ def task_wget_download_hospital(metadata):
 
     queue_next_tasks(task_wget_download_hospital, crawler.metadata)
 
+
+def task_find_clinical_trials(hospital_data):
+    crawler = ClinicalTrialWorker.ClinicalTrialsCrawler(hospital_data)
+    crawler.execute()
+
+    queue_next_tasks(task_find_clinical_trials, crawler.metadata)
+
+
+def task_save_clinical_trials(hospital_data):
+    saver = ClinicalTrialWorker.StoreCTInElastic(hospital_data)
+    saver.execute()
+
+    queue_next_tasks(task_save_clinical_trials, saver.metadata)
 
 def known_by_google(metadata):
     return 'is_hospital_google' in metadata
@@ -98,27 +99,30 @@ def task_hospital_discard_irrelevant(metadata):
 
 
 def task_save_hospital(metadata):
-    from HospitalTasks import StoreInElastic
+    from HospitalWorkers import StoreInElastic
     saver = StoreInElastic(metadata)
     saver.execute()
 
     queue_next_tasks(task_save_hospital, saver.metadata)
 
 
-def task_find_clinical_trials(metadata):
-    crawler = clinical_trials_crawler.ClinicalTrialsCrawler(metadata)
-    crawler.execute()
-
-    from ClinicalTrialsTasks import StoreCTInElastic
-    saver = StoreCTInElastic(crawler.metadata)
-    saver.execute()
-
 def task_crawl_pubmed(metadata):
     pass
 
+def queue_next_tasks(task_function, metadata):
+    if task_function not in pipeline:
+        return
+
+    tasks = pipeline[task_function]
+
+    for task in tasks:
+        logging.info('Queue task {0} for {1}'.format(task_function.__name__, task.__name__))
+        q.enqueue_call(func=task, args=(metadata,), at_front=True)
+
+
+
 
 """ This dictionary defines our pipeline
-
 Each task should check the the value of pipeline['task_name'] to get a list of tasks to queue next. 
 """
 pipeline = {
@@ -128,8 +132,10 @@ pipeline = {
     task_hospital_remove_match_keywords:            [task_hospital_validate_with_knowledge_graph],
     task_hospital_validate_with_knowledge_graph:    [task_hospital_find_url_from_wikipedia],
     task_hospital_find_url_from_wikipedia:          [task_hospital_discard_irrelevant],
-    task_hospital_discard_irrelevant:               [task_save_hospital],
+    task_hospital_discard_irrelevant:               [task_save_hospital, task_crawl_pubmed, task_find_clinical_trials],
 
-    task_save_hospital:                             [task_crawl_pubmed, task_find_clinical_trials],
+    task_find_clinical_trials:                      [task_save_hospital, task_save_clinical_trials],
+
+    task_save_hospital:                             [],
 
 }

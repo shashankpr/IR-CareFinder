@@ -83,9 +83,9 @@ class FourSquareCrawler(BaseTask):
                 time.sleep(random.randint(2, 3))
 
     def _output_hospital(self, hospital_data):
-        queue = self.queue
+        from queue_helper import q
         logging.info('Add hospital to task queue')
-        queue.enqueue(task_hospital_duplicate_detector, hospital_data)
+        q.enqueue(task_hospital_duplicate_detector, hospital_data)
 
     def _extract_contact_info(self, item_contact):
         contact_info = {
