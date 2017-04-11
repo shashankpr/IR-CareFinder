@@ -46,6 +46,14 @@ def task_hospital_duplicate_detector(metadata):
 
 
 def task_hospital_remove_match_keywords(metadata):
+    """ Remove Hospitals that have one of the selected keywords in their name
+    
+    This step mimics what could have been done with crowdsourcing. Thr crowdsourcing task would ask users to judge if a 
+    name is really a hospital name, or something else such as animal hospital, cafetaria in the hospital, parking etc.
+     
+    The list of keywords here was found by manually looking in the results of foursquare and finding keywords that 
+    appeared in non-hospital items. 
+    """
     keywords = ['veterinary', 'animal', 'department', 'floor', 'cafe', 'mta', 'cafeteria', 'food', 'parking', 'room',
                 'office']
 
@@ -85,6 +93,7 @@ def task_save_clinical_trials(hospital_data):
 
     queue_next_tasks(task_save_clinical_trials, saver.metadata)
 
+
 def known_by_google(metadata):
     return 'is_hospital_google' in metadata
 
@@ -110,20 +119,27 @@ def task_crawl_pubmed(metadata):
     pass
 
 def queue_next_tasks(task_function, metadata):
+    """ Queue next tasks
+    
+    This function checks the `pipeline` dictionary for tasks that should be queued following `task_function`.
+    """
     if task_function not in pipeline:
-        return
+        return  # The calling task is not in the pipeline, so no next tasks can be executed
 
     tasks = pipeline[task_function]
 
     for task in tasks:
-        logging.info('Queue task {0} for {1}'.format(task_function.__name__, task.__name__))
-        q.enqueue_call(func=task, args=(metadata,), at_front=True, timeout=60*15)
+        logging.info('Queue task {0} for {1}'.format(task.__name__, task_function.__name__))
 
-
+        # at_front=True gives a depth-first pipeline, as newly generated tasks are also executed first
+        # timeout is set not to low because some tasks take quite a while to finish
+        q.enqueue_call(func=task, args=(metadata,), at_front=True, timeout=60 * 15)
 
 
 """ This dictionary defines our pipeline
-Each task should check the the value of pipeline['task_name'] to get a list of tasks to queue next. 
+
+Each task should call `queue_next_tasks` at the end of the function. This will check the `pipeline` dictionary for 
+the next tasks that need to be queued. 
 """
 pipeline = {
     task_crawl_foursquare:                          [task_hospital_duplicate_detector],  # Actually defined in the class
