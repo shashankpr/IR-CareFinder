@@ -53,6 +53,20 @@ def hospital_google_graph():
     hospital_commandline_function(task_hospital_validate_with_knowledge_graph, KnowledgeGraphValidator)
 
 
+def hospital_match_keywords():
+    hospitals = get_all_hospitals()
+
+    for hospital in hospitals:
+        metadata = hospital
+        keywords = ['veterinary', 'animal', 'department', 'floor', 'cafe', 'mta', 'cafeteria', 'food', 'parking',
+                    'room', 'office']
+
+        for keyword in keywords:
+            if keyword in metadata['name'].lower():
+                logging.info('Keyword {} found in {}'.format(keyword, metadata['name']))
+                break
+
+
 def wget_download():
     results = get_all_hospitals()
     urls = [h['url'] for h in results]
@@ -66,8 +80,8 @@ def foursquare_seeder():
     metadata = {
         "targetSquare": {
             'NE': "40.797480, -73.858479",
-            # 'SW': "40.645527, -74.144426",
-            'SW': "40.787480, -74.0",
+            'SW': "40.645527, -74.144426",
+            #'SW': "40.787480, -74.0",
         },
         "step": 0.05
     }
@@ -95,6 +109,7 @@ programs = {
     'hospital-google': hospital_google_graph,
     'clinical-trial': clinical_trials,
     'wget-all': wget_download,
+    'match-keywords': hospital_match_keywords,
 }
 
 if args.program in programs:
