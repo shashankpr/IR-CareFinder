@@ -68,19 +68,11 @@ def foursquare_seeder():
     q.enqueue(task_crawl_foursquare, metadata, ttl=-1)
 
 def clinical_trials(    ):
-    if not args.id:
-        print 'Please provide an hospital id.'
-        return
+    hospitals = get_hospital_as_list()
 
-    hospital_list = []
-    if args.id == -1:
-        with db_session:
-            hospital_list = select(hospital.id for hospital in Hospital if hospital.url == '')[:]
-    else:
-        hospital_list = [args.id]
-
-    for hospital_id in hospital_list:
-        q.enqueue(task_find_clinical_trials, {'search': hospital_id}, ttl=-1)
+    for metadata in hospitals:
+        logging.info(metadata.keys())
+        q.enqueue(task_find_clinical_trials, {'query': hospital_id}, ttl=-1)
 
 programs = {
     'foursquare-seeder': foursquare_seeder,
