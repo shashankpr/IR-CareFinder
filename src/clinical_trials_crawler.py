@@ -19,14 +19,15 @@ class ClinicalTrialsCrawler:
         self.zip_string = 'Not run yet'
         self.downloaded = 0
         self.results = {}
+        self.metadata['results'] = {}
 
-        if self.metadata.has_key('query'):
-            self.search_string = self.metadata.get('query')
+        if self.metadata.has_key('normalized-name'):
+            self.search_string = self.metadata.get('normalized-name')
         else:
             try:
                 raise RuntimeError
             except RuntimeError:
-                logging.error('No property query found!')
+                logging.error('No property normalized-name found!')
                 raise
 
     # Converts extracted data to list form.
@@ -77,13 +78,14 @@ class ClinicalTrialsCrawler:
                         self.results[nct_id] = self._extract_data(doc)
                     os.remove(m)
 
+            self.metadata['results'] = self.results
+
         elif self.zip_string == 'Not run yet':
             try:
                 raise RuntimeError
             except RuntimeError:
                 logging.error('download_zip has not been run yet for ' + self.search_string)
                 raise
-
         else:
             logging.debug('No search results found for ' + self.search_string)
 
@@ -99,3 +101,4 @@ class ClinicalTrialsCrawler:
     # Returns the amount of results.
     def get_downloaded(self):
         return self.downloaded
+
