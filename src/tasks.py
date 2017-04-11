@@ -117,7 +117,7 @@ def queue_next_tasks(task_function, metadata):
 
     for task in tasks:
         logging.info('Queue task {0} for {1}'.format(task_function.__name__, task.__name__))
-        q.enqueue_call(func=task, args=(metadata,), at_front=True)
+        q.enqueue_call(func=task, args=(metadata,), at_front=True, timeout=60*15)
 
 
 
