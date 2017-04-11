@@ -13,10 +13,11 @@ logging.basicConfig(level=logging.INFO)
 parser = argparse.ArgumentParser(description='Best CareFinder commandline interface.')
 
 parser.add_argument('program', help='hostpital-url, foursquare-seeder')
-parser.add_argument('--id', action='store', type=int)
+parser.add_argument('--id', action='store', type=str)
 parser.add_argument('--task', action='store', type=bool)
 
 args = parser.parse_args()
+
 
 def get_hospital_as_list():
     if not args.id:
@@ -28,9 +29,7 @@ def get_hospital_as_list():
     else:
         results = get_hospitals_by_normalized_name(args.id)
 
-    hospital_list = [result['_source'] for result in results]
-
-    return hospital_list
+    return results
 
 
 def hospital_commandline_function(task_function, executor_function):
@@ -53,6 +52,14 @@ def hospital_wikipedia():
 def hospital_google_graph():
     hospital_commandline_function(task_hospital_validate_with_knowledge_graph, KnowledgeGraphValidator)
 
+
+def wget_download():
+    results = get_all_hospitals()
+    urls = [h['url'] for h in results]
+    urls_unique = list(set(urls))
+
+    for url in urls_unique:
+        q.enqueue(task_wget_download_hospital, {'url': url}, ttl=-1, timeout=86400) #timeout of 24 hours to grab whole site
 
 
 def foursquare_seeder():
@@ -87,6 +94,7 @@ programs = {
     'hospital-wikipedia': hospital_wikipedia,
     'hospital-google': hospital_google_graph,
     'clinical-trial': clinical_trials,
+    'wget-all': wget_download,
 }
 
 if args.program in programs:

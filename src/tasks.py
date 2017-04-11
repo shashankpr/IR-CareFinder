@@ -6,6 +6,9 @@ import logging
 
 
 def queue_next_tasks(task_function, metadata):
+    if task_function not in pipeline:
+        return
+
     tasks = pipeline[task_function]
 
     for task in tasks:
@@ -54,11 +57,31 @@ def task_hospital_duplicate_detector(metadata):
         logging.info('{} is a duplicate, so discard.'.format(metadata['name']))
 
 
+def task_hospital_remove_match_keywords(metadata):
+    keywords = ['veterinary', 'animal', 'department', 'floor', 'cafe', 'mta', 'cafeteria', 'food', 'parking', 'room',
+                'office']
+
+    for keyword in keywords:
+        if keyword in metadata['name'].lower():
+            logging.info('Keyword {} found in {}'.format(keyword, metadata['name']))
+            return
+
+    queue_next_tasks(task_hospital_remove_match_keywords, metadata)
+
+
 def task_hospital_find_url_from_wikipedia(metadata):
     finder = HospitalTasks.WikipediaUrlEnricher(metadata)
     finder.execute()
 
     queue_next_tasks(task_hospital_find_url_from_wikipedia, finder.metadata)
+
+
+def task_wget_download_hospital(metadata):
+    import WgetDownloader
+    crawler = WgetDownloader.WgetDownloader(metadata)
+    crawler.execute()
+
+    queue_next_tasks(task_wget_download_hospital, crawler.metadata)
 
 
 def known_by_google(metadata):
@@ -85,7 +108,7 @@ def task_save_hospital(metadata):
 def task_find_clinical_trials(metadata):
     crawler = clinical_trials_crawler.ClinicalTrialsCrawler(metadata)
     crawler.execute()
-    
+
     init_db()
     for ct in crawler.results.itervalues():
         conditions = ', '.join(ct['condition'])
@@ -100,9 +123,9 @@ def task_find_clinical_trials(metadata):
             clinicaltrial = ClinicalTrial(
                 id=ct['nct_id'],
                 title=ct['title'],
-                condition = conditions,
-                conditions_mesh = conditions_mesh,
-                keyword = keyword,
+                condition=conditions,
+                conditions_mesh=conditions_mesh,
+                keyword=keyword,
             )
 
             hospital = Hospital[crawler.metadata['query']]
@@ -115,18 +138,18 @@ def task_crawl_pubmed(metadata):
     pass
 
 
-
 """ This dictionary defines our pipeline
 
 Each task should check the the value of pipeline['task_name'] to get a list of tasks to queue next. 
 """
 pipeline = {
-    task_crawl_foursquare:                          [task_hospital_duplicate_detector],
+    task_crawl_foursquare:                          [task_hospital_duplicate_detector],  # Actually defined in the class
 
-    task_hospital_duplicate_detector:               [task_hospital_validate_with_knowledge_graph],
+    task_hospital_duplicate_detector:               [task_hospital_remove_match_keywords],
+    task_hospital_remove_match_keywords:            [task_hospital_validate_with_knowledge_graph],
     task_hospital_validate_with_knowledge_graph:    [task_hospital_find_url_from_wikipedia],
     task_hospital_find_url_from_wikipedia:          [task_hospital_discard_irrelevant],
     task_hospital_discard_irrelevant:               [task_save_hospital],
 
-    task_save_hospital:                             [task_crawl_pubmed, task_find_clinical_trials],
+    task_save_hospital: [],  # task_crawl_pubmed, task_find_clinical_trials
 }
