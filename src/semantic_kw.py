@@ -56,7 +56,7 @@ class AddRelatedKeywordsToClinicalTrials(BaseTask):
         for i in results:
             semantic_dict['main_query'] = i[0]['name']
             semantic_dict['main_related'] = i[1]['name']
-            semantic_dict['related_kw_list'] = i[2]['name']
+            semantic_dict['related_kw_list'] = eval(i[2]['name'])
             semantic_dict['illness_type'] = i[3]['name']
 
         logging.info(semantic_dict)
