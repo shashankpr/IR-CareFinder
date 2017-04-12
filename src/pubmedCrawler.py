@@ -42,7 +42,7 @@ class PubMedCrawler(BaseTask):
 
         self.metadata['papers'] = papers
 
-    def search_pubmed(self, author, max_count=1000):
+    def search_pubmed(self, author, max_count=20):
         """Search the pubmed database
     
         Args:
