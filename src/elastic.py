@@ -117,7 +117,7 @@ def get_hospitals_by_condition(condition):
                         "multi_match": {
                             "query": condition,
                             "type": "cross_fields",
-                            "fields": ["clinicaltrials.condition", "clinicaltrials.conditions_mesh",
+                            "fields": ["clinicaltrials.conditions", "clinicaltrials.conditions_mesh",
                                        "clinicaltrials.keywords"],
                             "operator": "or",
                             "use_dis_max": False,
@@ -131,8 +131,8 @@ def get_hospitals_by_condition(condition):
             "order": "score",
             "fields": {
                 "content": {
-                    "matched_fields": ["clinicaltrials.condition", "clinicaltrials.conditions_mesh",
-                                       "clinicaltrials.keyword"]
+                    "matched_fields": ["clinicaltrials.conditions", "clinicaltrials.conditions_mesh",
+                                       "clinicaltrials.keywords"]
                 }
             }
         }
