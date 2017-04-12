@@ -70,8 +70,8 @@ class FourSquareCrawler(BaseTask):
 
         Returns:
             List containing vdis and hdis.
-            vdis -- Vertical length of a subsquare
-            hdis -- Horizontal length of a subsquare 
+            vdis -- Amount of vertical subsquares
+            hdis --  Amount of horizontal subsquares 
         """
         vdis = int(math.ceil(math.fabs((coor[0][0] - coor[1][0]) / step)))
         hdis = int(math.ceil(math.fabs((coor[0][1] - coor[1][1]) / step)))
