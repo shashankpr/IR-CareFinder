@@ -1,42 +1,43 @@
 import logging
+
 from tasks import *
-from HospitalTasks import *
+from HospitalWorkers import *
+from ClinicalTrialWorker import *
 import argparse
-from queue import q
-from pony.orm import *
-import Models
-from Models.Hospital import Hospital
+from queue_helper import q
+from elastic import get_all_hospitals, get_hospitals_by_normalized_name
+
 import time
-import json
 
 logging.basicConfig(level=logging.INFO)
 
 parser = argparse.ArgumentParser(description='Best CareFinder commandline interface.')
 
 parser.add_argument('program', help='hostpital-url, foursquare-seeder')
-parser.add_argument('--id', action='store', type=int)
+parser.add_argument('--id', action='store', type=str)
 parser.add_argument('--task', action='store', type=bool)
 
 args = parser.parse_args()
+
 
 def get_hospital_as_list():
     if not args.id:
         print('Please provide an hospital id.')
         exit()
 
-    with db_session:
-        if args.id == -1:
-            hospital_list = select(hospital.raw_data for hospital in Hospital)[:]
-        else:
-            hospital_list = select(hospital.raw_data for hospital in Hospital if hospital.id == args.id)[:]
-    return hospital_list
+    if args.id == 'all':
+        results = get_all_hospitals()
+    else:
+        results = get_hospitals_by_normalized_name(args.id)
+
+    return results
 
 
 def hospital_commandline_function(task_function, executor_function):
     hospitals = get_hospital_as_list()
 
-    for metadata_json in hospitals:
-        metadata = json.loads(metadata_json)
+    for metadata in hospitals:
+        print metadata['name']
         if args.task:
             task_function(metadata)
         else:
@@ -54,43 +55,48 @@ def hospital_google_graph():
     hospital_commandline_function(task_hospital_validate_with_knowledge_graph, KnowledgeGraphValidator)
 
 
+def hospital_match_keywords():
+    hospital_commandline_function(task_hospital_remove_match_keywords, None)
+
+
+def wget_download():
+    results = get_all_hospitals()
+    urls = [h['url'] for h in results]
+    urls_unique = list(set(urls))
+
+    for url in urls_unique:
+        q.enqueue(task_wget_download_hospital, {'url': url}, ttl=-1,
+                  timeout=86400)  # timeout of 24 hours to grab whole site
+
 
 def foursquare_seeder():
     metadata = {
         "targetSquare": {
             'NE': "40.797480, -73.858479",
-            # 'SW': "40.645527, -74.144426",
-            'SW': "40.787480, -74.0",
+            'SW': "40.645527, -74.144426",
+            # 'SW': "40.787480, -74.0",
         },
         "step": 0.05
     }
 
     q.enqueue(task_crawl_foursquare, metadata, ttl=-1)
 
-def clinical_trials(    ):
-    if not args.id:
-        print 'Please provide an hospital id.'
-        return
 
-    hospital_list = []
-    if args.id == -1:
-        with db_session:
-            hospital_list = select(hospital.id for hospital in Hospital if hospital.url == '')[:]
-    else:
-        hospital_list = [args.id]
+def clinical_trials():
+    hospital_commandline_function(task_find_clinical_trials, ClinicalTrialsCrawler)
 
-    for hospital_id in hospital_list:
-        q.enqueue(task_find_clinical_trials, {'search': hospital_id}, ttl=-1)
 
 programs = {
     'foursquare-seeder': foursquare_seeder,
     'hospital-wikipedia': hospital_wikipedia,
     'hospital-google': hospital_google_graph,
-    'clinical-trial': clinical_trials,
+    'clinical-trials': clinical_trials,
+    'wget-all': wget_download,
+
+    'match-keywords': hospital_match_keywords,
 }
 
 if args.program in programs:
-    Models.init_db()
     programs.get(args.program)()
 else:
     print 'Function not found.'

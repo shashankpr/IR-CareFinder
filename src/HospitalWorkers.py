@@ -1,8 +1,6 @@
 from BaseTask import BaseTask
-from pony.orm import *
-from Models.Hospital import Hospital
-from Models import init_db
 from settings import settings
+from elastic import elastic, get_hospitals_by_normalized_name
 import urllib
 import logging
 import json
@@ -67,52 +65,26 @@ class DuplicateChecker(BaseTask):
 
     def execute(self):
         # Set default value
+
         self.metadata['duplicate'] = False
 
-        init_db()
+        res = get_hospitals_by_normalized_name(self.metadata['normalized-name'])
 
-        name = self.metadata['name']
-        normalized_name = Hospital.normalize(name)
-
-        with db_session:
-            existing_count = count(h for h in Hospital if h.slug == normalized_name)
-
-            if existing_count >= 1:
-                self.metadata['log'].append('Duplicate entry')
-                self.metadata['duplicate'] = True
+        if len(res) >= 1:
+            self.metadata['log'].append('Duplicate entry')
+            self.metadata['duplicate'] = True
 
 
-class StoreInDB(BaseTask):
+class StoreInElastic(BaseTask):
     def __init__(self, metadata):
-        super(StoreInDB, self).__init__(metadata)
+        super(StoreInElastic, self).__init__(metadata)
 
     def execute(self):
-        init_db()
+        from helpers import normalize_hospital_name
+        id = normalize_hospital_name(self.metadata['name'])
 
-        if 'id' in self.metadata:
-            logging.info('Update hospital')
-            self.update_hospital()
-        else:
-            logging.info('Create new hospital')
-            self.add_to_database()
-
-    def update_hospital(self):
-        self.info('update!')
-        raise NotImplemented
-
-    def add_to_database(self):
-        with db_session:
-            h = Hospital(
-                name=self.metadata['name'],
-                slug=Hospital.normalize(self.metadata['name']),
-                url=self.metadata['url'],
-                foursquare_id=self.metadata['foursquare-id'],
-
-                raw_data=json.dumps(self.metadata),
-                log=json.dumps(self.metadata['log'])
-            )
-            commit()
-            self.metadata['id'] = h.id
+        res = elastic.index(index="hospital-index", doc_type='hospital', id=id, body=self.metadata)
+        print(res['created'])
 
 
 class WikipediaUrlEnricher(BaseTask):

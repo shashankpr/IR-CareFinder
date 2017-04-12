@@ -6,6 +6,7 @@ import math
 import logging
 from BaseTask import BaseTask
 from settings import settings
+from helpers import normalize_hospital_name
 from tasks import task_hospital_duplicate_detector
 
 
@@ -68,6 +69,7 @@ class FourSquareCrawler(BaseTask):
                     result = {
                         "foursquare-id": item['id'],
                         "name": item['name'],
+                        "normalized-name": normalize_hospital_name(item['name']),
                         "url": item.get('url', ''),
                         "contact": self._extract_contact_info(item['contact']),
                         "location": self._extract_location_info(item['location']),
@@ -81,21 +83,21 @@ class FourSquareCrawler(BaseTask):
                 time.sleep(random.randint(2, 3))
 
     def _output_hospital(self, hospital_data):
-        queue = self.queue
+        from queue_helper import q
         logging.info('Add hospital to task queue')
-        queue.enqueue(task_hospital_duplicate_detector, hospital_data)
+        q.enqueue(task_hospital_duplicate_detector, hospital_data)
 
     def _extract_contact_info(self, item_contact):
         contact_info = {
-            "phone": item_contact.get('formattedPhone', ''),
-            "facebook": item_contact.get('facebookName', ''),
+            "phone": item_contact.get('formattedPhone'),
+            "facebook": item_contact.get('facebookName'),
             "twitter": item_contact.get('twitter'),
         }
         return contact_info
 
     def _extract_location_info(self, item_location):
         location_info = {
-            "address": item_location.get('formattedAddress', ''),
+            "address": item_location.get('formattedAddress'),
             "lat": item_location.get('lat'),
             "lng": item_location.get('lng'),
         }

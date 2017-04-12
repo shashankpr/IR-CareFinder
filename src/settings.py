@@ -22,9 +22,23 @@ settings = {
         "db": environ.get("MYSQL_DB", 'information-retrieval'),
     },
 
+    "elastic": {
+        "host": environ.get("ELASTIC_HOST", 'localhost'),
+        "port": environ.get("ELASTIC_PORT", '9200'),
+        "user": environ.get("ELASTIC_USER", ''),
+        "pass": environ.get("ELASTIC_PASS", ''),
+    },
+
     "knowledge_graph": {
         "key": environ.get("GKG_APIKEY"),
     },
+
+    "webdav": {
+        'webdav_hostname': environ.get("WEBDAV_HOSTNAME"),
+        'webdav_root': environ.get("WEBDAV_ROOT"),
+        'webdav_login': environ.get("WEBDAV_LOGIN"),
+        'webdav_password': environ.get("WEBDAV_PASSWORD"),
+    }
 }
 
 # Setting for `rq worker`
