@@ -52,11 +52,6 @@ class PubMedCrawler(BaseTask):
         Returns:
             records -- a list of dictionaries, each dictionary contains information about an article
         """
-        name=author.split(' ')
-        abbr_name=''
-        for item in name[:-1]:
-            abbr_name+=item[0].upper()
-        author='\"'+name[-1]+' '+abbr_name+'\"'
         term = author + '[author]'
 
         self.info('Search publications of {0}...'.format(term))
