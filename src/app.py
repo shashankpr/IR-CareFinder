@@ -63,7 +63,10 @@ def hospital_match_keywords():
 
 
 def hospital_smart_names():
-    hospital_commandline_function(task_hospital_extract_names_smart, None)
+    hospitals = get_hospital_as_list()
+
+    for hospital in hospitals:
+        q.enqueue(task_hospital_extract_names_smart, hospital)
 
 def wget_download():
     results = get_all_hospitals()
