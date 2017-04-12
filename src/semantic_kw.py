@@ -2,10 +2,11 @@ from neo4jrestclient.client import GraphDatabase
 from neo4jrestclient import client
 from BaseTask import BaseTask
 import logging
+from settings import settings
 
 logging.basicConfig(level=logging.INFO)
 
-gdb = GraphDatabase("http://localhost:7474", username='neo4j', password='test123')
+gdb = GraphDatabase(settings['neo4j']['url'], username=settings['neo4j']['user'], password=settings['neo4j']['pass'])
 
 
 class AddRelatedKeywordsToClinicalTrials(BaseTask):
