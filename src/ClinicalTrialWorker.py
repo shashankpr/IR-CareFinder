@@ -21,6 +21,8 @@ class ClinicalTrialsCrawler(BaseTask):
         Args:
             metadata -- Input dictionary, should contain the Hospital name under key 'name'.
         """
+        super(ClinicalTrialsCrawler, self).__init__(metadata)
+
         self.metadata = metadata
         self.zip_string = 'Not run yet'
         self.downloaded = 0
@@ -29,7 +31,6 @@ class ClinicalTrialsCrawler(BaseTask):
         self.search_string = self.metadata['name']
 
         logging.info('Start for {}'.format(metadata['name']))
-
 
     def _change_to_list(self, value):
         """Converts extracted data to a list if it is a single value.
@@ -40,7 +41,6 @@ class ClinicalTrialsCrawler(BaseTask):
         if type(value) is not list:
             value = [value]
         return value
-
 
     def _extract_data(self, xmldict):
         """Extracts the nct_id, title, conditions and keywords from a xml dictionary.
@@ -60,10 +60,10 @@ class ClinicalTrialsCrawler(BaseTask):
         if ctdict.has_key('condition_browse'):
             extracted['conditions_mesh'] = self._change_to_list(ctdict['condition_browse']['mesh_term'])
 
-        if ctdict.has_key('conditions'):
+        if ctdict.has_key('condition'):
             extracted['conditions'] = self._change_to_list(ctdict['condition'])
 
-        if ctdict.has_key('keywords'):
+        if ctdict.has_key('keyword'):
             extracted['keywords'] = self._change_to_list(ctdict['keyword'])
 
         return extracted
@@ -108,7 +108,6 @@ class ClinicalTrialsCrawler(BaseTask):
         else:
             logging.info('No search results found for ' + self.search_string)
 
-
     def execute(self):
         """Executes the downloading and processing of a search result.
         """
@@ -125,6 +124,7 @@ class ClinicalTrialsCrawler(BaseTask):
         """
         return len(self.results)
 
+
 class StoreCTInElastic(BaseTask):
     def __init__(self, metadata):
         """Initializes an instance to store ClinicalTrials into ElasticSearch.
@@ -138,6 +138,6 @@ class StoreCTInElastic(BaseTask):
         """Stores all processed ClinicalTrials into ElasticSearch.
         """
         for ct in self.metadata['clinicaltrials']:
-            ct_id = ct['nct_id']
+            index_id = self.metadata['normalized-name'] + '-' + ct['nct_id']
 
-            elastic.index(index="clinicaltrails-index", doc_type='clinicaltrial', id=ct_id, body=ct)
+            elastic.index(index="clinicaltrails-index", doc_type='clinicaltrial', id=index_id, body=ct)

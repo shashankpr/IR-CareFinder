@@ -42,6 +42,12 @@ settings = {
 
     "warc": {
         'path': environ.get("WARC_STORAGE")
+    },
+
+    "neo4j": {
+        "url": environ.get("NEO4J_URL"),
+        "user": environ.get("NEO4J_USER"),
+        "pass": environ.get("NEO4J_PASS"),
     }
 
 }

@@ -7,7 +7,7 @@ import re
 import requests
 
 
-def search_pubmed(author='',max_count=100):
+def search_pubmed(author='', max_count=100):
     """Search the pubmed database
 
     Args:
@@ -31,7 +31,7 @@ def search_pubmed(author='',max_count=100):
     return records
 
 
-def help_information(show_all=True,term=''):
+def help_information(show_all=True, term=''):
     """Find corresponding abbreviations of features in the Medline format,
        so as to access information in the articles dictionary.
 
@@ -40,20 +40,20 @@ def help_information(show_all=True,term=''):
         show_all: if true, show all features and their abbreviations
         term: feature of interest
     """
-    if term!='':
-        show_all=False
+    if term != '':
+        show_all = False
 
-    r=requests.get('https://www.nlm.nih.gov/bsd/mms/medlineelements.html')
-    table_block=BeautifulSoup(r.text,"lxml").find("table")
+    r = requests.get('https://www.nlm.nih.gov/bsd/mms/medlineelements.html')
+    table_block = BeautifulSoup(r.text, "lxml").find("table")
 
-    info=table_block.find_all("a")
-    for idx,item in enumerate(info):
+    info = table_block.find_all("a")
+    for idx, item in enumerate(info):
 
-        if item.string is None or item.string.strip()=='':
+        if item.string is None or item.string.strip() == '':
             continue
 
-        if re.match('\([A-Z]+\)',str(item.string)) and show_all:
-            print(str(info[idx-1].string) + '--->' + str(item.string))
+        if re.match('\([A-Z]+\)', str(item.string)) and show_all:
+            print(str(info[idx - 1].string) + '--->' + str(item.string))
 
         if term in str.lower(item.string) and not show_all:
-            print(str(item.string)+"--->"+str(info[idx+1].string))
+            print(str(item.string) + "--->" + str(info[idx + 1].string))

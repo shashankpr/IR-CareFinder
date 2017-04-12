@@ -47,6 +47,7 @@ class ExtensiveSearchNameExtractor(BaseTask):
 
     def _remove_local_copy(self):
         if os.path.isfile(self._archive_local_path()):
+            self.info('Clean up local copy')
             os.remove(self._archive_local_path())
 
     def _archive_name(self):

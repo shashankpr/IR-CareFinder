@@ -3,7 +3,7 @@ import HospitalWorkers
 import DoctorNameWorker
 import logging
 import ClinicalTrialWorker
-
+import semantic_kw
 
 def task_crawl_foursquare(metadata):
     """
@@ -156,6 +156,13 @@ def produce_pubmed_name_tasks(metadata):
     pass
 
 
+def task_clinicaltrials_graph_keywords(hospital_data):
+    keyword_adder = semantic_kw.AddRelatedKeywordsToClinicalTrials(hospital_data)
+    keyword_adder.execute()
+
+    queue_next_tasks(task_clinicaltrials_graph_keywords, hospital_data)
+
+
 def queue_next_tasks(task_function, metadata):
     """ Queue next tasks
     
@@ -188,10 +195,10 @@ pipeline = {
     task_hospital_find_url_from_wikipedia:          [task_hospital_discard_irrelevant],
     task_hospital_discard_irrelevant:               [task_save_hospital, task_find_clinical_trials],
 
-    task_find_clinical_trials:                      # [task_clinicaltrials_graph_keywords],
-    # task_clinicaltrials_graph_keywords:
-                                                    [task_save_hospital, task_save_clinical_trials,
-                                                     task_hospital_extract_names_smart],
+    task_find_clinical_trials:                      [task_clinicaltrials_graph_keywords],
+    task_clinicaltrials_graph_keywords:             [task_save_hospital, task_save_clinical_trials],
+    #                                                 [task_save_hospital, t
+    #                                                  task_hospital_extract_names_smart],
 
     task_hospital_extract_names_smart:              [task_hospital_bruteforce_names_if_needed],
 
