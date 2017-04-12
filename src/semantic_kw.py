@@ -18,8 +18,6 @@ class AddRelatedKeywordsToClinicalTrials(BaseTask):
         for clinicaltrial in self.metadata['clinicaltrials']:
             self.enhanceTrial(clinicaltrial)
 
-        print self.metadata
-
     def enhanceTrial(self, clinicaltrial):
 
         main_keywords = set()
