@@ -21,7 +21,7 @@ class ClinicalTrialsCrawler(BaseTask):
         self.zip_string = 'Not run yet'
         self.downloaded = 0
         self.results = []
-        self.metadata['clinicaltrials'] = {}
+        self.metadata['clinicaltrials'] = []
         logging.info('Start for {}'.format(metadata['name']))
 
         self.search_string = self.metadata['name']
