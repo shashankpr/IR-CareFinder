@@ -62,16 +62,16 @@ class FourSquareCrawler(BaseTask):
 
     @staticmethod
     def _extend_area(coor, step):
-        """Blabla
+        """Calculates amount of subsquares.
 
         Args:
             coor -- List containing the coordinates.
-            step -- 
+            step -- Size of a subsquare
 
         Returns:
             List containing vdis and hdis.
-            vdis --
-            hdis -- 
+            vdis -- Vertical length of a subsquare
+            hdis -- Horizontal length of a subsquare 
         """
         vdis = int(math.ceil(math.fabs((coor[0][0] - coor[1][0]) / step)))
         hdis = int(math.ceil(math.fabs((coor[0][1] - coor[1][1]) / step)))
@@ -83,26 +83,30 @@ class FourSquareCrawler(BaseTask):
         Args:
             coordinate_ne -- The north east point of the square.
             coordinate_sw -- The south west point of the square.
-            step -- 
+            step -- Size of a subsquare
         """
         client = foursquare.Foursquare(client_id=settings['foursquare']['client_id'],
                                        client_secret=settings['foursquare']['client_secret'])
         coor = self._str2coor(coordinate_ne, coordinate_sw)
 
-        exstep = self._extend_area(coor, step)  # number of steps in two direction (vertical, horizontal)
+        #Calculate the amount of steps to be taken in two directions (vertical, horizontal).
+        exstep = self._extend_area(coor, step)
 
         for i in range(exstep[0]):
             for j in range(exstep[1]):
+                # Calculate the location of current subsquare
                 nepoint = str([round(coor[0][0] - i * step, 2), round(coor[0][1] - j * step, 2)])[1:-1]
                 swpoint = str([round(coor[0][0] - step * (i + 1), 2), round(coor[0][1] - step * (j + 1), 2)])[1:-1]
 
                 logging.info([nepoint, swpoint])
 
+                # Search the subsquare on Foursquare for hospitals.
                 results = client.venues.search(params={'query': 'hospital', 'intent': 'browse',
                                                        'ne': nepoint,
                                                        'sw': swpoint})
                 logging.info(str(len(results['venues'])) + " hospitals in this area")
 
+                # Extract the data from all retrieved hospitals.
                 for item in results['venues']:
                     result = {
                         "foursquare-id": item['id'],
