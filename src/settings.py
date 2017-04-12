@@ -38,7 +38,18 @@ settings = {
         'webdav_root': environ.get("WEBDAV_ROOT"),
         'webdav_login': environ.get("WEBDAV_LOGIN"),
         'webdav_password': environ.get("WEBDAV_PASSWORD"),
+    },
+
+    "warc": {
+        'path': environ.get("WARC_STORAGE")
+    },
+
+    "neo4j": {
+        "url": environ.get("NEO4J_URL"),
+        "user": environ.get("NEO4J_USER"),
+        "pass": environ.get("NEO4J_PASS"),
     }
+
 }
 
 # Setting for `rq worker`
