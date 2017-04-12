@@ -13,3 +13,4 @@ beautifulsoup4
 nltk
 slugify
 biopython
+lxml

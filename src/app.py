@@ -97,7 +97,11 @@ def clinical_trials():
     for hospital in hospitals:
         q.enqueue(task_find_clinical_trials, hospital)
 
+def pubmed_all():
+    hospitals = get_hospital_as_list()
 
+    for hospital in hospitals:
+        q.enqueue(task_pubmed_crawler, hospital)
 
 programs = {
     'foursquare-seeder': foursquare_seeder,
@@ -105,6 +109,7 @@ programs = {
     'hospital-google': hospital_google_graph,
     'hospital-names': hospital_smart_names,
     'clinical-trials': clinical_trials,
+    'pubmed-all': pubmed_all,
     'wget-all': wget_download,
 
     'match-keywords': hospital_match_keywords,
