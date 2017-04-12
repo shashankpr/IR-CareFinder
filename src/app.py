@@ -56,7 +56,10 @@ def hospital_google_graph():
 
 
 def hospital_match_keywords():
-    hospital_commandline_function(task_hospital_remove_match_keywords, None)
+    hospitals = get_hospital_as_list()
+
+    for hospital in hospitals:
+        q.enqueue(task_clinicaltrials_graph_keywords, hospital)
 
 
 def hospital_smart_names():
@@ -86,7 +89,11 @@ def foursquare_seeder():
 
 
 def clinical_trials():
-    hospital_commandline_function(task_find_clinical_trials, ClinicalTrialsCrawler)
+    hospitals = get_hospital_as_list()
+
+    for hospital in hospitals:
+        q.enqueue(task_find_clinical_trials, hospital)
+
 
 
 programs = {
