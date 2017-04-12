@@ -4,6 +4,16 @@ from nltk.tokenize import wordpunct_tokenize
 
 
 def normalize_hospital_name(name):
+    """Normalizes a given hospital name.
+        1. Converts all words to lower case.
+        2. Removes all stopwords.
+
+    Args:
+        name -- Name to be normalized.
+
+    Returns:
+        slug -- The normalized hospital name.
+    """
     normalized_name = name.lower()
 
     stopword_list = stopwords.words('english')
