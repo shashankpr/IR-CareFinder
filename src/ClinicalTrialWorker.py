@@ -19,7 +19,8 @@ class ClinicalTrialsCrawler(BaseTask):
         """Initializes a ClinicalTrialsCrawler instance.
         
         Args:
-            metadata -- Input dictionary, should contain the Hospital name under key 'name'."""
+            metadata -- Input dictionary, should contain the Hospital name under key 'name'.
+        """
         self.metadata = metadata
         self.zip_string = 'Not run yet'
         self.downloaded = 0
@@ -34,7 +35,8 @@ class ClinicalTrialsCrawler(BaseTask):
         """Converts extracted data to a list if it is a single value.
         
         Args:
-            value -- The value that requires checking"""
+            value -- The value that requires checking
+        """
         if type(value) is not list:
             value = [value]
         return value
@@ -47,7 +49,8 @@ class ClinicalTrialsCrawler(BaseTask):
             xmldict -- A downloaded XML file in dictionary form.
         
         Returns:
-            extracted -- A dictionary containing the extracted data."""
+            extracted -- A dictionary containing the extracted data.
+        """
         extracted = {}
         ctdict = xmldict['clinical_study']
 
@@ -57,22 +60,24 @@ class ClinicalTrialsCrawler(BaseTask):
         if ctdict.has_key('condition_browse'):
             extracted['conditions_mesh'] = self._change_to_list(ctdict['condition_browse']['mesh_term'])
 
-        if ctdict.has_key('condition'):
-            extracted['condition'] = self._change_to_list(ctdict['condition'])
+        if ctdict.has_key('conditions'):
+            extracted['conditions'] = self._change_to_list(ctdict['condition'])
 
-        if ctdict.has_key('keyword'):
-            extracted['keyword'] = self._change_to_list(ctdict['keyword'])
+        if ctdict.has_key('keywords'):
+            extracted['keywords'] = self._change_to_list(ctdict['keyword'])
 
         return extracted
 
     def _download_zip(self):
-        """Downloads a zipfile containing the XML files of the search results from ClinicalTrials."""
+        """Downloads a zipfile containing the XML files of the search results from ClinicalTrials.
+        """
         t = Trials()
         result_string = t.download(self.search_string)
         self.zip_string = StringIO(result_string)
 
     def _process_zip(self):
-        """Processes the data in the zipfile downloaded by _download_zip."""
+        """Processes the data in the zipfile downloaded by _download_zip.
+        """
         if zipfile.is_zipfile(self.zip_string):
             # Check if the downloaded file is a valid zipfile.
             with zipfile.ZipFile(self.zip_string, "r") as zip_file:
@@ -105,16 +110,19 @@ class ClinicalTrialsCrawler(BaseTask):
 
 
     def execute(self):
-        """Executes the downloading and processing of a search result."""
+        """Executes the downloading and processing of a search result.
+        """
         self._download_zip()
         self._process_zip()
 
     def get_downloaded(self):
-        """Returns the amount of downloaded results."""
+        """Returns the amount of downloaded results.
+        """
         return self.downloaded
 
     def get_amount_of_results(self):
-        """Returns the amount of processed results."""
+        """Returns the amount of processed results.
+        """
         return len(self.results)
 
 class StoreCTInElastic(BaseTask):
@@ -122,11 +130,13 @@ class StoreCTInElastic(BaseTask):
         """Initializes an instance to store ClinicalTrials into ElasticSearch.
 
         Args:
-            metadata -- Input dictionary, should contain a list with the processed ClinicalTrials under key 'clinicaltrials'."""
+            metadata -- Input dictionary, should contain a list with the processed ClinicalTrials under key 'clinicaltrials'.
+        """
         super(StoreCTInElastic, self).__init__(metadata)
 
     def execute(self):
-        """Stores all processed ClinicalTrials into ElasticSearch."""
+        """Stores all processed ClinicalTrials into ElasticSearch.
+        """
         for ct in self.metadata['clinicaltrials']:
             ct_id = ct['nct_id']
 
