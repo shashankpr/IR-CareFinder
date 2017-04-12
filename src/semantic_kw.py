@@ -18,8 +18,6 @@ class AddRelatedKeywordsToClinicalTrials(BaseTask):
         for clinicaltrial in self.metadata['clinicaltrials']:
             self.enhanceTrial(clinicaltrial)
 
-        print self.metadata
-
     def enhanceTrial(self, clinicaltrial):
 
         main_keywords = set()
@@ -38,9 +36,9 @@ class AddRelatedKeywordsToClinicalTrials(BaseTask):
                 related_kws.update(graph_result['related_kw_list'])
                 illness_type.add(graph_result['illness_type'])
 
-        clinicaltrial['main_keywords'] = main_keywords
-        clinicaltrial['related_kws'] = related_kws
-        clinicaltrial['illness_type'] = illness_type
+        clinicaltrial['main_keywords'] = list(main_keywords)
+        clinicaltrial['related_kws'] = list(related_kws)
+        clinicaltrial['illness_type'] = list(illness_type)
 
     def query_cypher(self, keyword):
         self.info('Keyword: {}'.format(keyword))

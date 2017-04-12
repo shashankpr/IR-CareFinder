@@ -4,6 +4,7 @@ import DoctorNameWorker
 import logging
 import ClinicalTrialWorker
 import semantic_kw
+import pubmedCrawler
 
 def task_crawl_foursquare(metadata):
     """
@@ -117,13 +118,11 @@ def task_save_hospital(metadata):
 
 
 def task_hospital_extract_names_smart(metadata):
-
     #
     # place holder code by @micsong
     #
 
     queue_next_tasks(task_hospital_extract_names_smart, metadata)
-
 
 
 def has_at_least_amount_of_doctors(hospital, number):
@@ -148,12 +147,22 @@ def task_hospital_bruteforce_names_if_needed(metadata):
             worker.execute()
 
             metadata = worker.metadata
-    raise RuntimeError
+
     queue_next_tasks(task_hospital_bruteforce_names_if_needed, metadata)
 
 
-def produce_pubmed_name_tasks(metadata):
-    pass
+def task_pubmed_crawler(hospital_metadata):
+    crawler = pubmedCrawler.PubMedCrawler(hospital_metadata)
+    crawler.execute()
+
+    queue_next_tasks(task_pubmed_crawler, crawler.metadata)
+
+
+def task_save_publications(hospital_metadata):
+    saver = pubmedCrawler.StorePublicationsInElastic(hospital_metadata)
+    saver.execute()
+
+    queue_next_tasks(task_save_publications, saver.metadata)
 
 
 def task_clinicaltrials_graph_keywords(hospital_data):
@@ -195,16 +204,17 @@ pipeline = {
     task_hospital_find_url_from_wikipedia:          [task_hospital_discard_irrelevant],
     task_hospital_discard_irrelevant:               [task_save_hospital, task_find_clinical_trials],
 
-    task_find_clinical_trials:                      [task_clinicaltrials_graph_keywords],
+    task_find_clinical_trials:                      [task_save_hospital, task_save_clinical_trials],
+        #[task_clinicaltrials_graph_keywords],
     task_clinicaltrials_graph_keywords:             [task_save_hospital, task_save_clinical_trials],
     #                                                 [task_save_hospital, t
     #                                                  task_hospital_extract_names_smart],
 
     task_hospital_extract_names_smart:              [task_hospital_bruteforce_names_if_needed],
 
-    task_hospital_bruteforce_names_if_needed:       [task_save_hospital],
+    task_hospital_bruteforce_names_if_needed:       [task_pubmed_crawler],  # TODO [task_save_hospital, task_pubmed_crawler],
 
-    # , task_pubmed_crawler],
+    task_pubmed_crawler:                            [task_save_publications],
     #
     # task_pubmed_crawler:                            [task_publication_graph_keywords],
     # task_publictions_graph_keywords:                [task_save_hospital, task_save_doctors, task_save_publications1],
