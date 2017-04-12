@@ -80,7 +80,6 @@ class StoreInElastic(BaseTask):
         super(StoreInElastic, self).__init__(metadata)
 
     def execute(self):
-        from elastic import elastic
         from helpers import normalize_hospital_name
         id = normalize_hospital_name(self.metadata['name'])
 
