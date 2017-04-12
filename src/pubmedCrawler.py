@@ -7,20 +7,19 @@ import re
 import requests
 
 
-def search_pubmed(term,max_count,author=''):
+def search_pubmed(author='',max_count=100):
     """Search the pubmed database
 
     Args:
-        term -- terms need to search for
         max_count -- specifies how many results will be returned
         author -- name of doctor of interest
 
     Returns:
         records -- a list of dictionaries, each dictionary contains information about an article
     """
-    term = term + '&' + author + '[author]' if author != '' else term
+    term = author + '[author]'
 
-    print('Getting {0} publications containing {1}...'.format(max_count, term))
+    print('Getting {0} publications of {1}...'.format(max_count, term))
     Entrez.email = 'A.N.Other@example.com'
     h = Entrez.esearch(db='pubmed', retmax=max_count, term=term)
     result = Entrez.read(h)
