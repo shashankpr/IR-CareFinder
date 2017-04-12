@@ -12,17 +12,31 @@ from tasks import task_hospital_duplicate_detector
 
 class FourSquareCrawler(BaseTask):
     def __init__(self, metadata):
+        """Initializes a FourSquareWorker instance.
+
+        Args:
+            metadata -- Input dictionary, should contain the targeted square coordinates under key 'targetSquare'.
+        """
         self.metadata = metadata
 
     def execute(self):
+
         self._getHospitalDetails(self.metadata['targetSquare']['NE'], self.metadata['targetSquare']['SW'],
                                  self.metadata['step'])
 
     # order: northeast, southwest.
 
-    # convert string to coordinate
     @staticmethod
     def _str2coor(coordinate_ne, coordinate_sw):
+        """Convert the strings to coordinates.
+        
+        Args:
+            coordinate_ne -- The north east point of the square.
+            coordinate_sw -- The south west point of the square.
+        
+        Returns:
+            coorData -- List containing the converted coordinates.
+        """
         coorData = []
 
         coordinates = [coordinate_ne, coordinate_sw]
@@ -35,9 +49,16 @@ class FourSquareCrawler(BaseTask):
 
         return coorData
 
-    # convert coordinate to string
     @staticmethod
     def _coor2str(coor):
+        """Convert the coordinates to strings.
+
+        Args:
+            coor -- List containing the coordinates.
+        
+        Returns:
+            List containing the converted strings.
+        """
         return [str(coor[0]), str(coor[1])]
 
     @staticmethod

@@ -10,4 +10,4 @@ rq
 beautifulsoup4
 nltk
 slugify
-
+biopython
