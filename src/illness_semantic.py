@@ -2,8 +2,10 @@ import logging
 from bs4 import BeautifulSoup
 import urllib2
 import json
+import time
+import pandas as pd
 
-logging.basicConfig(filename='graph.log', filemode='w', level=logging.DEBUG)
+logging.basicConfig(filename='graph.log', filemode='w', level=logging.INFO)
 
 url     =   "https://medlineplus.gov/healthtopics.html"
 page    =   urllib2.urlopen(url)
@@ -121,8 +123,8 @@ def find_governing_body(url):
     return org_name
 
 def find_illnesses(disease_type):
-    illness_semantic_dict = {}
 
+    illness_list = []
     for category_names, links in disease_type:
         #logging.info("Names : {}, Links: {}" .format(category_names, links))
 
@@ -143,7 +145,8 @@ def find_illnesses(disease_type):
         encyclo_list        =   []
         related_health_list =   []
         health_institute    =   ''
-        #illness_semantic_dict = {}
+
+
 
 
         for list in sub_illness_section.find_all('li'):
@@ -153,8 +156,10 @@ def find_illnesses(disease_type):
 
             main_illness_name       =   main_illness_name.replace(' see ' + sub_illness_name, '')
 
+            illness_semantic_dict = {}
+
             if sub_illness_name not in sub_illness_list:
-                #print illness_link
+
                 specifics_list      =   find_specifics(illness_link)            #Topics from specifics
                 encyclo_list        =   find_med_encylo(illness_link)           #Topics from Encyclopedia
                 related_health_list =   find_related_side_topics(illness_link)  #Topics from Related Health
@@ -163,24 +168,33 @@ def find_illnesses(disease_type):
 
                 health_institute    =   find_governing_body(illness_link)
 
-            sub_illness_list.append(sub_illness_name)
-            #logging.info("{}, {}, {}, {}, {}, {}, {}, {}, {}" .format(main_illness_name, relation_type,
-            #                                                          sub_illness_name, relation_type, related_topics,
-            #                                                          relation_type_2, category_names, relation_type_3,
-            #                                                          health_institute ))
+                illness_semantic_dict[main_relation] = main_illness_name
+                illness_semantic_dict[relation_type] = sub_illness_name
+                illness_semantic_dict[relation_type_4] = related_topics
+                illness_semantic_dict[relation_type_2] = category_names
+                illness_semantic_dict[relation_type_3] = health_institute
 
-            illness_semantic_dict[main_relation] = main_illness_name
-            illness_semantic_dict[relation_type] = sub_illness_name
-            illness_semantic_dict[relation_type_4] = related_topics
-            illness_semantic_dict[relation_type_2] = category_names
-            illness_semantic_dict[relation_type_3] = health_institute
+                #logging.info("{}".format(illness_list))
 
-            logging.debug("{}". format(illness_semantic_dict))
+                # with open('small_data.json', 'w') as fp:
+                #     json.dump(illness_list, fp, sort_keys=True, indent=4)
 
-    with open('data.json', 'a') as fp:
-        json.dump(illness_semantic_dict, fp, sort_keys=True, indent=4)
+                sub_illness_list.append(sub_illness_name)
+                logging.info("Added : {}".format(sub_illness_name))
+                illness_list.append(illness_semantic_dict)
+            else:
+                logging.info("{} Already in the LIST".format(sub_illness_name))
 
-    return illness_semantic_dict
+        logging.info(illness_list)
+
+        with open('data_more_json.json', 'w') as fp:
+            json.dump(illness_list, fp, sort_keys=True, indent=4)
+
+        df = pd.DataFrame(illness_list)
+        df.to_csv('data_more.csv')
+
+
+    return illness_list
 
 
 disease_type = find_health_topics(page)
