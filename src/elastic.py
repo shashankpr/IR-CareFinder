@@ -106,3 +106,42 @@ def get_all_hospitals():
     results = [hospital['_source'] for hospital in res['hits']['hits']]
 
     return results
+
+
+def get_hospitals_by_condition(condition):
+    search_query = {
+        "query": {
+            "bool": {
+                "should": [
+                    {
+                        "multi_match": {
+                            "query": condition,
+                            "type": "cross_fields",
+                            "fields": ["clinicaltrials.condition", "clinicaltrials.conditions_mesh",
+                                       "clinicaltrials.keywords"],
+                            "operator": "or",
+                            "use_dis_max": False,
+                            "minimum_should_match": "50%"
+                        }
+                    }
+                ]
+            }
+        },
+        "highlight": {
+            "order": "score",
+            "fields": {
+                "content": {
+                    "matched_fields": ["clinicaltrials.condition", "clinicaltrials.conditions_mesh",
+                                       "clinicaltrials.keyword"]
+                }
+            }
+        }
+    }
+
+    res = elastic.search(index="hospital-index", body=search_query, size=10000)
+
+    logging.info('Elasticsearch returned {} hits'.format(res['hits']['total']))
+
+    results = [hospital['_source'] for hospital in res['hits']['hits']]
+
+    return results
