@@ -25,6 +25,9 @@ class AddRelatedKeywordsToClinicalTrials(BaseTask):
         related_kws = set()
         illness_type = set()
 
+        if 'conditions' not in clinicaltrial:
+            return
+
         for condition in clinicaltrial['conditions']:
 
             graph_result = self.query_cypher(condition)
@@ -69,6 +72,3 @@ class AddRelatedKeywordsToClinicalTrials(BaseTask):
         processed_kw = double_q + kw + regex + double_q
 
         return processed_kw
-
-#process_keyword('Adenoma')
-query_cypher('Adenoma')

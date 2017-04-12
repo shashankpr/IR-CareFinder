@@ -196,8 +196,8 @@ pipeline = {
     task_hospital_discard_irrelevant:               [task_save_hospital, task_find_clinical_trials],
 
     task_find_clinical_trials:                      [task_clinicaltrials_graph_keywords],
-    task_clinicaltrials_graph_keywords:             [task_save_hospital],
-    #                                                 [task_save_hospital, task_save_clinical_trials,
+    task_clinicaltrials_graph_keywords:             [task_save_hospital, task_save_clinical_trials],
+    #                                                 [task_save_hospital, t
     #                                                  task_hospital_extract_names_smart],
 
     task_hospital_extract_names_smart:              [task_hospital_bruteforce_names_if_needed],
