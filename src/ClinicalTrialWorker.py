@@ -63,8 +63,8 @@ class ClinicalTrialsCrawler(BaseTask):
         if ctdict.has_key('condition'):
             extracted['condition'] = self._change_to_list(ctdict['condition'])
 
-        if ctdict.has_key('keyword'):
-            extracted['keyword'] = self._change_to_list(ctdict['keyword'])
+        if ctdict.has_key('keywords'):
+            extracted['keywords'] = self._change_to_list(ctdict['keyword'])
 
         return extracted
 
