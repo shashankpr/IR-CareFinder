@@ -6,11 +6,18 @@ import re
 
 import requests
 
-#return a list of dictionaries
-#each dictionary contain information about an article
-#to extract attributes from the dictionary use help_information() for help
+
 def search_pubmed(term,max_count,author=''):
-    # can add constraints on the author's name
+    """Search the pubmed database
+
+    Args:
+        term -- terms need to search for
+        max_count -- specifies how many results will be returned
+        author -- name of doctor of interest
+
+    Returns:
+        records -- a list of dictionaries, each dictionary contains information about an article
+    """
     term = term + '&' + author + '[author]' if author != '' else term
 
     print('Getting {0} publications containing {1}...'.format(max_count, term))
@@ -24,11 +31,16 @@ def search_pubmed(term,max_count,author=''):
 
     return records
 
-#the keys of the dictionary is the abbreviation of the term,
-#to find out which term correspond to which abbreviation, please
-#use this help function
+
 def help_information(show_all=True,term=''):
-    # mode=input("please select from options below\nShow all abbr: 1\nSearch for an abbr ")
+    """Find corresponding abbreviations of features in the Medline format,
+       so as to access information in the articles dictionary.
+
+
+    Args:
+        show_all: if true, show all features and their abbreviations
+        term: feature of interest
+    """
     if term!='':
         show_all=False
 
