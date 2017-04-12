@@ -57,6 +57,14 @@ def escapeSolrArg(term):
 
 
 def get_hospitals_by_normalized_name(normalized_name):
+    """Search for a hospital based on its normailzed name.
+
+    Args:
+        normalized_name -- String containing the Normalized name of the hospital to search for.
+        
+    Returns:
+        results -- List containing the found results.
+    """
     search_query = {
         "query": {
             "bool": {
@@ -80,6 +88,11 @@ def get_hospitals_by_normalized_name(normalized_name):
 
 
 def get_all_hospitals():
+    """Retrieve all hospitals in Elastic Search.
+
+    Returns:
+        results -- List containing all hospitals in ElasticSearch
+    """
     search_query = {
         "query": {
             "match_all": {}
