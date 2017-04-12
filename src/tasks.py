@@ -3,7 +3,7 @@ import HospitalWorkers
 import DoctorNameWorker
 import logging
 import ClinicalTrialWorker
-
+import semantic_kw
 
 def task_crawl_foursquare(metadata):
     """
