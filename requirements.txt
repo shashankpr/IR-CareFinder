@@ -1,3 +1,4 @@
+neo4jrestclient
 probablepeople
 warcreader
 elasticsearch

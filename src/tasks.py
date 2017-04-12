@@ -156,6 +156,13 @@ def produce_pubmed_name_tasks(metadata):
     pass
 
 
+def task_clinicaltrials_graph_keywords(hospital_data):
+    keyword_adder = semantic_kw.AddRelatedKeywordsToClinicalTrials(hospital_data)
+    keyword_adder.execute()
+
+    queue_next_tasks(task_clinicaltrials_graph_keywords, hospital_data)
+
+
 def queue_next_tasks(task_function, metadata):
     """ Queue next tasks
     
