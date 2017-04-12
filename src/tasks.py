@@ -149,7 +149,6 @@ def task_hospital_bruteforce_names_if_needed(metadata):
             metadata = worker.metadata
 
     queue_next_tasks(task_hospital_bruteforce_names_if_needed, metadata)
-    raise RuntimeError
 
 
 def task_pubmed_crawler(hospital_metadata):
@@ -157,13 +156,12 @@ def task_pubmed_crawler(hospital_metadata):
     crawler.execute()
 
     queue_next_tasks(task_pubmed_crawler, crawler.metadata)
-    raise RuntimeError
 
 
 def task_save_publications(hospital_metadata):
     saver = pubmedCrawler.StorePublicationsInElastic(hospital_metadata)
     saver.execute()
-    raise RuntimeError
+
     queue_next_tasks(task_save_publications, saver.metadata)
 
 
