@@ -214,7 +214,7 @@ pipeline = {
 
     task_hospital_bruteforce_names_if_needed:       [task_pubmed_crawler],  # TODO [task_save_hospital, task_pubmed_crawler],
 
-    task_pubmed_crawler:                            [task_save_publications],
+    task_pubmed_crawler:                            [task_save_publications, task_save_hospital],
     #
     # task_pubmed_crawler:                            [task_publication_graph_keywords],
     # task_publictions_graph_keywords:                [task_save_hospital, task_save_doctors, task_save_publications1],
