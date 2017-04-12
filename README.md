@@ -56,11 +56,11 @@ The `app.py` will put a task on the queue to start crawling foursquare.
 
 To use the Illness Knowledge Graph for querying or viewing, Neo4j GraphDB needs to be installed first.
 
-- Download Neo4j v3.1.3 from the following url: [https://neo4j.com/download/community-edition/]
+- Download Neo4j v3.1.3 from the following url: https://neo4j.com/download/community-edition/
 
 - Place the *illness_knowledge_dataset.csv* inside the *import* folder of the graphdb instance.
 
-- Start the local server. The default address is [http://localhost:7474]
+- Start the local server. The default address is http://localhost:7474
 
 - Browse to the local server and run the following *Cypher* query:
 ```
