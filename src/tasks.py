@@ -1,5 +1,6 @@
 from queue_helper import q
 import HospitalWorkers
+import DoctorNameWorker
 import logging
 import ClinicalTrialWorker
 
@@ -115,8 +116,45 @@ def task_save_hospital(metadata):
     queue_next_tasks(task_save_hospital, saver.metadata)
 
 
-def task_crawl_pubmed(metadata):
+def task_hospital_extract_names_smart(metadata):
+
+    #
+    # place holder code by @micsong
+    #
+
+    queue_next_tasks(task_hospital_extract_names_smart, metadata)
+
+
+
+def has_at_least_amount_of_doctors(hospital, number):
+    """Small predicate to determine if hospital has enough doctors
+    
+    The enough part is dependent on the state of the intelligent doctor name finder.
+    """
+    return 'doctors' in hospital and len(hospital['doctors']) > number
+
+
+def task_hospital_bruteforce_names_if_needed(metadata):
+    """Use a brute-force method to find doctor names on a hospital website
+    
+    If the hospital object hasn't got enough doctors the extensive search method is started, otherwise we assume the 
+    intelligent name extractor has worked.
+    """
+
+    if 'url' in metadata and metadata['url'] != '':
+
+        if not has_at_least_amount_of_doctors(metadata, 10):
+            worker = DoctorNameWorker.ExtensiveSearchNameExtractor(metadata)
+            worker.execute()
+
+            metadata = worker.metadata
+    raise RuntimeError
+    queue_next_tasks(task_hospital_bruteforce_names_if_needed, metadata)
+
+
+def produce_pubmed_name_tasks(metadata):
     pass
+
 
 def queue_next_tasks(task_function, metadata):
     """ Queue next tasks
@@ -142,15 +180,27 @@ Each task should call `queue_next_tasks` at the end of the function. This will c
 the next tasks that need to be queued. 
 """
 pipeline = {
-    task_crawl_foursquare:                          [task_hospital_duplicate_detector],  # Actually defined in the class
+    task_crawl_foursquare: [task_hospital_duplicate_detector],  # Actually defined in the class
 
     task_hospital_duplicate_detector:               [task_hospital_remove_match_keywords],
     task_hospital_remove_match_keywords:            [task_hospital_validate_with_knowledge_graph],
     task_hospital_validate_with_knowledge_graph:    [task_hospital_find_url_from_wikipedia],
     task_hospital_find_url_from_wikipedia:          [task_hospital_discard_irrelevant],
-    task_hospital_discard_irrelevant:               [task_save_hospital, task_crawl_pubmed, task_find_clinical_trials],
+    task_hospital_discard_irrelevant:               [task_save_hospital, task_find_clinical_trials],
 
-    task_find_clinical_trials:                      [task_save_hospital, task_save_clinical_trials],
+    task_find_clinical_trials:                      # [task_clinicaltrials_graph_keywords],
+    # task_clinicaltrials_graph_keywords:
+                                                    [task_save_hospital, task_save_clinical_trials,
+                                                     task_hospital_extract_names_smart],
+
+    task_hospital_extract_names_smart:              [task_hospital_bruteforce_names_if_needed],
+
+    task_hospital_bruteforce_names_if_needed:       [task_save_hospital],
+
+    # , task_pubmed_crawler],
+    #
+    # task_pubmed_crawler:                            [task_publication_graph_keywords],
+    # task_publictions_graph_keywords:                [task_save_hospital, task_save_doctors, task_save_publications1],
 
     task_save_hospital:                             [],
 
