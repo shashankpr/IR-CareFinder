@@ -28,7 +28,7 @@ class ExtensiveSearchNameExtractor(BaseTask):
 
         if os.path.isfile(self._archive_local_path()):
             names = self.extract_names()
-            self.metadata['doctors'] = names
+            self.metadata['doctors'] = list(names)
 
         self._remove_local_copy()
 
