@@ -1,64 +1,84 @@
 # -*- coding: utf-8 -*-
 from Bio import Entrez
 from Bio import Medline
-from bs4 import BeautifulSoup
-import re
-
-import requests
-
-
-def search_pubmed(author='', max_count=100):
-    """Search the pubmed database
-
-    Args:
-        max_count -- specifies how many results will be returned
-        author -- name of doctor of interest
-
-    Returns:
-        records -- a list of dictionaries, each dictionary contains information about an article
-    """
-    name=author.split(' ')
-    abbr_name=''
-    for item in name[:-1]:
-        abbr_name+=item[0].upper()
-    author='\"'+name[-1]+' '+abbr_name+'\"'
-    term = author + '[author]'
-
-    print('Getting {0} publications of {1}...'.format(max_count, term))
-    Entrez.email = 'A.N.Other@example.com'
-    h = Entrez.esearch(db='pubmed', retmax=max_count, term=term)
-    result = Entrez.read(h)
-    print('Total number of publications containing {0}: {1}'.format(term, result['Count']))
-    ids = result['IdList']
-    h = Entrez.efetch(db='pubmed', id=ids, rettype='medline', retmode='text')
-    records = Medline.parse(h)
-
-    return records
+from BaseTask import BaseTask
+import time
+from elastic import elastic
 
 
-def help_information(show_all=True, term=''):
-    """Find corresponding abbreviations of features in the Medline format,
-       so as to access information in the articles dictionary.
+class StorePublicationsInElastic(BaseTask):
+    def __init__(self, metadata):
+        super(StorePublicationsInElastic, self).__init__(metadata)
+
+    def execute(self):
+
+        if 'papers' not in self.metadata:
+            return
+
+        for paper in self.metadata['papers']:
+            self.save_single(paper, self.metadata['normalized-name'])
+
+    def save_single(self, paper, normalize_hospital_name):
+        id = '{}-{}-{}'.format(normalize_hospital_name, paper['searched_name'], paper['pmid'])
+
+        result = elastic.index(index="publication-index", doc_type='publication', id=id, body=paper)
 
 
-    Args:
-        show_all: if true, show all features and their abbreviations
-        term: feature of interest
-    """
-    if term != '':
-        show_all = False
+class PubMedCrawler(BaseTask):
+    def __init__(self, metadata):
+        super(PubMedCrawler, self).__init__(metadata)
+        Entrez.email = 'A.N.Other@example.com'
 
-    r = requests.get('https://www.nlm.nih.gov/bsd/mms/medlineelements.html')
-    table_block = BeautifulSoup(r.text, "lxml").find("table")
+    def execute(self):
 
-    info = table_block.find_all("a")
-    for idx, item in enumerate(info):
+        if 'doctors' not in self.metadata:
+            return
 
-        if item.string is None or item.string.strip() == '':
-            continue
+        names = self.metadata['doctors']
 
-        if re.match('\([A-Z]+\)', str(item.string)) and show_all:
-            print(str(info[idx - 1].string) + '--->' + str(item.string))
+        papers = []
+        for name in names:
+            papers.extend(self.search_pubmed(name))
 
-        if term in str.lower(item.string) and not show_all:
-            print(str(item.string) + "--->" + str(info[idx + 1].string))
+        self.metadata['papers'] = papers
+
+    def search_pubmed(self, author, max_count=1000):
+        """Search the pubmed database
+    
+        Args:
+            max_count -- specifies how many results will be returned
+            author -- name of doctor of interest
+    
+        Returns:
+            records -- a list of dictionaries, each dictionary contains information about an article
+        """
+        term = author + '[author]'
+
+        self.info('Search publications of {0}...'.format(term))
+
+        # Get list of id's
+        handle = Entrez.esearch(db='pubmed', retmax=max_count, term=term)
+        result = Entrez.read(handle)
+        self.info('Total number of publications containing {0}: {1}'.format(term, result['Count']))
+        ids = result['IdList']
+
+        # Fetch actual metadata of the papers
+        handle = Entrez.efetch(db='pubmed', id=ids, rettype='medline', retmode='text')
+        records = Medline.parse(handle)
+
+        # Sleep for 1 second to adhere to the requested waiting time between requests
+        time.sleep(1)
+
+        # Convert the Bio record generator into a list of dictionaries
+        papers = []
+        for record in records:
+            if 'AB' in record and 'AU' in record and 'MH' in record and 'PMID' in record:
+                paper = dict({'abstract': record['AB'],
+                              'author': record['AU'],
+                              'mesh-terms': record['MH'],
+                              'pmid': record['PMID'],
+                              'searched_name': author
+                              })
+                papers.append(paper)
+
+        return papers
