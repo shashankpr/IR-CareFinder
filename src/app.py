@@ -59,6 +59,9 @@ def hospital_match_keywords():
     hospital_commandline_function(task_hospital_remove_match_keywords, None)
 
 
+def hospital_smart_names():
+    hospital_commandline_function(task_hospital_extract_names_smart, None)
+
 def wget_download():
     results = get_all_hospitals()
     urls = [h['url'] for h in results]
@@ -90,6 +93,7 @@ programs = {
     'foursquare-seeder': foursquare_seeder,
     'hospital-wikipedia': hospital_wikipedia,
     'hospital-google': hospital_google_graph,
+    'hospital-names': hospital_smart_names,
     'clinical-trials': clinical_trials,
     'wget-all': wget_download,
 

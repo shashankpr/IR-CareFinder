@@ -38,7 +38,12 @@ settings = {
         'webdav_root': environ.get("WEBDAV_ROOT"),
         'webdav_login': environ.get("WEBDAV_LOGIN"),
         'webdav_password': environ.get("WEBDAV_PASSWORD"),
+    },
+
+    "warc": {
+        'path': environ.get("WARC_STORAGE")
     }
+
 }
 
 # Setting for `rq worker`
