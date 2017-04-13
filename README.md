@@ -9,27 +9,16 @@ To date, no Web search engine allows to search for hospitals and clinics by the 
 **Assignment:** design and implement a sensemaking system that, given a country or region of references, scouts from social data (e.g. FourSquare) hospitals, identify their public information (e.g Website), extract the list of disciplines and related doctors, and provide a measure of quality of care based on the scientific productivity such doctors, and on the presence of active clinical trials. 
 
 
-## Tools used
-
-- python-dotenv [https://github.com/theskumar/python-dotenv]
-- rq [http://python-rq.org/]
-- rq-dashboard [https://github.com/eoranged/rq-dashboard]
-
-The rq package give an simple and easy task queue in python. 
-Internally it uses a redis server and doesn't require a special task queue server.
-The queue's can be monitored with the rq-dashboard tool.
-
-To prevent leaking secrets with our source repository we will use so called environment variables.
+## Storing secrets
+To prevent leaking secrets with the source repository, a so called environment variables are used.
 By using the dotenv package we can define these variables in a .env file and exclude this from our repo.
-
 
 
 ## installation for development
 
-- install redis, mysql-server/mariadb-server
+- install redis, mysql-server/mariadb-server, neo4j, elasticsearch
 - install requirements.txt with `pip install -r requirements.txt`
 - install the nltk punkt tokenizer with `python -c "import nltk;nltk.download('punkt');nltk.download("stopwords")"`
-- create a database with the schema found in `schema.sql`
 - copy `.env_example` to `.env` and fill in the required variables (api keys, usernames, passwords)
 - start a queue worker from the `src` folder with `rq worker -c settings`
 - in a separate terminal initiate the pipeline with `python app.py foursquare-seeder`
@@ -38,18 +27,13 @@ By using the dotenv package we can define these variables in a .env file and exc
 - start the queue dashboard with `rq-dashboard` and open http://localhost:9181/ in your browser
 
 ## Pipeline
-This section will explain the core parts of the pipeline.
-The pipeline uses a queue heavily to make it easy to run the system distributed.
+The pipeline is defined in the `tasks.py` file and can be easily changed.
+Steps can be shuffled or disabled if wanted.
+
 
 The whole pipeline is initiated by calling `python app.py foursquare-seeder`.
 The `app.py` will put a task on the queue to start crawling foursquare.
-
-### Task foursquare_crawler
-*Input:* NE, SW coordinates
-
-*Output:* nothing
-
-*Side-effect:* Puts for every hospital found a `task_hospital_duplicate_checker` on the queue with all metadata known of the hospital.
+`app.py` can also be used to rerun parts of the pipeline.
 
 
 ## Deploying Knowledge Graph
