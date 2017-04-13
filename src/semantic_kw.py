@@ -44,7 +44,11 @@ class AddRelatedKeywordsToClinicalTrials(BaseTask):
         clinicaltrial['illness_type'] = list(illness_type)
 
     def query_cypher(self, keyword):
-        self.info('Keyword: {}'.format(keyword))
+        try:
+            self.info('Keyword: {}'.format(keyword))
+        except UnicodeEncodeError:
+            pass
+
         processed_kw = self.process_keyword(keyword)
         self.info(processed_kw)
         q1 = 'MATCH (i)-[:RELATED_TO]->(r)'
