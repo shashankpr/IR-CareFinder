@@ -56,11 +56,17 @@ def hospital_google_graph():
 
 
 def hospital_match_keywords():
-    hospital_commandline_function(task_hospital_remove_match_keywords, None)
+    hospitals = get_hospital_as_list()
+
+    for hospital in hospitals:
+        q.enqueue(task_clinicaltrials_graph_keywords, hospital)
 
 
 def hospital_smart_names():
-    hospital_commandline_function(task_hospital_extract_names_smart, None)
+    hospitals = get_hospital_as_list()
+
+    for hospital in hospitals:
+        q.enqueue(task_hospital_extract_names_smart, hospital)
 
 def wget_download():
     results = get_all_hospitals()
@@ -86,8 +92,16 @@ def foursquare_seeder():
 
 
 def clinical_trials():
-    hospital_commandline_function(task_find_clinical_trials, ClinicalTrialsCrawler)
+    hospitals = get_hospital_as_list()
 
+    for hospital in hospitals:
+        q.enqueue(task_find_clinical_trials, hospital)
+
+def pubmed_all():
+    hospitals = get_hospital_as_list()
+
+    for hospital in hospitals:
+        q.enqueue(task_pubmed_crawler, hospital)
 
 programs = {
     'foursquare-seeder': foursquare_seeder,
@@ -95,6 +109,7 @@ programs = {
     'hospital-google': hospital_google_graph,
     'hospital-names': hospital_smart_names,
     'clinical-trials': clinical_trials,
+    'pubmed-all': pubmed_all,
     'wget-all': wget_download,
 
     'match-keywords': hospital_match_keywords,

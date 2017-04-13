@@ -204,17 +204,16 @@ pipeline = {
     task_hospital_find_url_from_wikipedia:          [task_hospital_discard_irrelevant],
     task_hospital_discard_irrelevant:               [task_save_hospital, task_find_clinical_trials],
 
-    task_find_clinical_trials:                      [task_save_hospital, task_save_clinical_trials],
-        #[task_clinicaltrials_graph_keywords],
+    task_find_clinical_trials:                      [task_clinicaltrials_graph_keywords],
     task_clinicaltrials_graph_keywords:             [task_save_hospital, task_save_clinical_trials],
     #                                                 [task_save_hospital, t
     #                                                  task_hospital_extract_names_smart],
 
     task_hospital_extract_names_smart:              [task_hospital_bruteforce_names_if_needed],
 
-    task_hospital_bruteforce_names_if_needed:       [task_pubmed_crawler],  # TODO [task_save_hospital, task_pubmed_crawler],
+    task_hospital_bruteforce_names_if_needed:       [task_save_hospital], #pubmed crawler
 
-    task_pubmed_crawler:                            [task_save_publications],
+    task_pubmed_crawler:                            [task_save_publications, task_save_hospital],
     #
     # task_pubmed_crawler:                            [task_publication_graph_keywords],
     # task_publictions_graph_keywords:                [task_save_hospital, task_save_doctors, task_save_publications1],

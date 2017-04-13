@@ -71,6 +71,7 @@ class ClinicalTrialsCrawler(BaseTask):
     def _download_zip(self):
         """Downloads a zipfile containing the XML files of the search results from ClinicalTrials.
         """
+        self.info('Download zip.')
         t = Trials()
         result_string = t.download(self.search_string)
         self.zip_string = StringIO(result_string)
@@ -78,6 +79,7 @@ class ClinicalTrialsCrawler(BaseTask):
     def _process_zip(self):
         """Processes the data in the zipfile downloaded by _download_zip.
         """
+        self.info('Process zip')
         if zipfile.is_zipfile(self.zip_string):
             # Check if the downloaded file is a valid zipfile.
             with zipfile.ZipFile(self.zip_string, "r") as zip_file:

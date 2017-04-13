@@ -16,6 +16,8 @@ class ExtensiveSearchNameExtractor(BaseTask):
         super(ExtensiveSearchNameExtractor, self).__init__(metadata)
 
     def execute(self):
+        if self.metadata['url'] == '':
+            return
 
         if self._archive_in_central_storage():
             self.info('Archive {} in central storage, create local copy.'.format(self._archive_name()))
