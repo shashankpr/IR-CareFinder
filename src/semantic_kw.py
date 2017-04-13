@@ -74,6 +74,7 @@ class AddRelatedKeywordsToClinicalTrials(BaseTask):
     def process_keyword(self, keyword):
         kw = str(keyword)
         kw = kw.lower()
+        kw = kw.replace('\\', ' ')
         double_q = '"'
         regex = '.*'
         processed_kw = double_q + kw + regex + double_q
