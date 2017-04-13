@@ -32,8 +32,18 @@ Calaca.factory('calacaService', ['$q', 'esFactory', '$location', function($q, el
                     "size": CALACA_CONFIGS.size,
                     "from": offset,
                     "query": {
-                        "query_string": {
-                            "query": query
+                        "bool": {
+                            "should": [{
+                                "multi_match": {
+                                    "query": query,
+                                    "type": "cross_fields",
+                                    "fields": ["clinicaltrials.conditions", "clinicaltrials.conditions_mesh",
+                                        "clinicaltrials.keywords"],
+                                    "operator": "or",
+                                    "use_dis_max": false,
+                                    "minimum_should_match": "50%"
+                                }
+                            }]
                         }
                     }
                 }
