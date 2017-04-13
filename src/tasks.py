@@ -166,6 +166,7 @@ def task_save_publications(hospital_metadata):
 
 
 def task_clinicaltrials_graph_keywords(hospital_data):
+    hospital_data['log'] = []
     keyword_adder = semantic_kw.AddRelatedKeywordsToClinicalTrials(hospital_data)
     keyword_adder.execute()
 

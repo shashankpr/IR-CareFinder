@@ -35,11 +35,14 @@ class AddRelatedKeywordsToClinicalTrials(BaseTask):
         for condition in clinicaltrial['conditions']:
 
             graph_result = self.query_cypher(condition)
-            if len(graph_result) > 0:
+            try:
                 main_keywords.add(graph_result['main_related'])
 
                 related_kws.update(graph_result['related_kw_list'])
                 illness_type.add(graph_result['illness_type'])
+            except Exception as e:
+                self.info(e.message)
+                self.info('exception during graph')
 
         clinicaltrial['main_keywords'] = list(main_keywords)
         clinicaltrial['related_kws'] = list(related_kws)
@@ -51,8 +54,11 @@ class AddRelatedKeywordsToClinicalTrials(BaseTask):
         :param keyword: 
         :return: Dictionary of result nodes from Neo4j
         """
+        try:
+            self.info('Keyword: {}'.format(keyword))
+        except UnicodeEncodeError:
+            pass
 
-        self.info('Keyword: {}'.format(keyword))
         processed_kw = self.process_keyword(keyword)
         self.info(processed_kw)
         q1 = 'MATCH (i)-[:RELATED_TO]->(r)'
@@ -63,14 +69,18 @@ class AddRelatedKeywordsToClinicalTrials(BaseTask):
         q6 = ' RETURN i, r, ar, t'
         q = q1 + q2 + q3 + q4 + q5 + q6
 
-        results = gdb.query(q, returns=(client.Node, client.Node, client.Node, client.Node))
         semantic_dict = {}
+        try:
+            results = gdb.query(q, returns=(client.Node, client.Node, client.Node, client.Node))
 
-        for i in results:
-            semantic_dict['main_query'] = i[0]['name']
-            semantic_dict['main_related'] = i[1]['name']
-            semantic_dict['related_kw_list'] = i[2]['name']
-            semantic_dict['illness_type'] = i[3]['name']
+            for i in results:
+                semantic_dict['main_query'] = i[0]['name']
+                semantic_dict['main_related'] = i[1]['name']
+                semantic_dict['related_kw_list'] = i[2]['name']
+                semantic_dict['illness_type'] = i[3]['name']
+
+        except SyntaxError as e:
+            self.info('Syntax error neo4')
 
         logging.info(semantic_dict)
         return semantic_dict
@@ -83,6 +93,7 @@ class AddRelatedKeywordsToClinicalTrials(BaseTask):
         '''
         kw = str(keyword)
         kw = kw.lower()
+        kw = kw.replace('\\', ' ')
         double_q = '"'
         regex = '.*'
         processed_kw = double_q + kw + regex + double_q

@@ -59,14 +59,14 @@ def hospital_match_keywords():
     hospitals = get_hospital_as_list()
 
     for hospital in hospitals:
-        q.enqueue(task_clinicaltrials_graph_keywords, hospital)
+        q.enqueue(task_clinicaltrials_graph_keywords, hospital, timeout=15*60)
 
 
 def hospital_smart_names():
     hospitals = get_hospital_as_list()
 
     for hospital in hospitals:
-        q.enqueue(task_hospital_extract_names_smart, hospital)
+        q.enqueue(task_hospital_extract_names_smart, hospital, timeout=15*60)
 
 def wget_download():
     results = get_all_hospitals()
