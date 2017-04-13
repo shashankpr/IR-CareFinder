@@ -19,6 +19,11 @@ class AddRelatedKeywordsToClinicalTrials(BaseTask):
             self.enhanceTrial(clinicaltrial)
 
     def enhanceTrial(self, clinicaltrial):
+        """
+        Gets keywords from clinicaltrials and returns related key terms from KG
+        :param clinicaltrial: 
+        :return: 
+        """
 
         main_keywords = set()
         related_kws = set()
@@ -41,6 +46,12 @@ class AddRelatedKeywordsToClinicalTrials(BaseTask):
         clinicaltrial['illness_type'] = list(illness_type)
 
     def query_cypher(self, keyword):
+        """
+        Querying Cypher via python API for closeness matching
+        :param keyword: 
+        :return: Dictionary of result nodes from Neo4j
+        """
+
         self.info('Keyword: {}'.format(keyword))
         processed_kw = self.process_keyword(keyword)
         self.info(processed_kw)
@@ -65,6 +76,11 @@ class AddRelatedKeywordsToClinicalTrials(BaseTask):
         return semantic_dict
 
     def process_keyword(self, keyword):
+        '''
+        Pre-processes the keyword query to suit Cypher 
+        :param keyword: 
+        :return: Processed keyword
+        '''
         kw = str(keyword)
         kw = kw.lower()
         double_q = '"'

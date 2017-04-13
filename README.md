@@ -52,4 +52,40 @@ The `app.py` will put a task on the queue to start crawling foursquare.
 *Side-effect:* Puts for every hospital found a `task_hospital_duplicate_checker` on the queue with all metadata known of the hospital.
 
 
+## Deploying Knowledge Graph
 
+To use the Illness Knowledge Graph for querying or viewing, Neo4j GraphDB needs to be installed first.
+
+- Download Neo4j v3.1.3 from the following url: https://neo4j.com/download/community-edition/
+
+- Place the *illness_knowledge_dataset.csv* inside the *import* folder of the graphdb instance.
+
+- Start the local server. The default address is http://localhost:7474
+
+- Browse to the local server and run the following *Cypher* query:
+```
+USING PERIODIC COMMIT 10000
+LOAD CSV WITH HEADERS FROM
+"file:///illness_knowledge_dataset.csv" AS line
+
+
+MERGE (i:Illness {name:toLower(line.illnessName)})
+
+MERGE (t:Type {name:toLower(line.isTypeOf)})
+
+MERGE (r:Related {name:toLower(line.relatedTo)})
+
+MERGE (ar:RelatedKW {name:toLower(line.subRelatedTo)})
+
+CREATE (i)-[:RELATED_TO]->(r)
+CREATE (i)-[:KW_RELATED]->(ar)
+CREATE (i)-[:TYPE_OF]->(t)
+CREATE (r)-[:KW_RELATED]->(ar)
+CREATE (r)-[:RELATED_TO]->(i)
+CREATE (r)-[:TYPE_OF]->(t);
+```
+- To check if the import has been successful, run the following query: 
+```
+MATCH (n) RETURN n; 
+```
+- If the import was successful then you should see a graph of nodes and their relations.
