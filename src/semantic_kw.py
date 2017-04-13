@@ -55,14 +55,18 @@ class AddRelatedKeywordsToClinicalTrials(BaseTask):
         q6 = ' RETURN i, r, ar, t'
         q = q1 + q2 + q3 + q4 + q5 + q6
 
-        results = gdb.query(q, returns=(client.Node, client.Node, client.Node, client.Node))
         semantic_dict = {}
+        try:
+            results = gdb.query(q, returns=(client.Node, client.Node, client.Node, client.Node))
 
-        for i in results:
-            semantic_dict['main_query'] = i[0]['name']
-            semantic_dict['main_related'] = i[1]['name']
-            semantic_dict['related_kw_list'] = i[2]['name']
-            semantic_dict['illness_type'] = i[3]['name']
+            for i in results:
+                semantic_dict['main_query'] = i[0]['name']
+                semantic_dict['main_related'] = i[1]['name']
+                semantic_dict['related_kw_list'] = i[2]['name']
+                semantic_dict['illness_type'] = i[3]['name']
+
+        except SyntaxError as e:
+            self.info('Syntax error neo4')
 
         logging.info(semantic_dict)
         return semantic_dict
