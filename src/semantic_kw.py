@@ -30,11 +30,14 @@ class AddRelatedKeywordsToClinicalTrials(BaseTask):
         for condition in clinicaltrial['conditions']:
 
             graph_result = self.query_cypher(condition)
-            if len(graph_result) > 0:
+            try:
                 main_keywords.add(graph_result['main_related'])
 
                 related_kws.update(graph_result['related_kw_list'])
                 illness_type.add(graph_result['illness_type'])
+            except Exception as e:
+                self.info(e.message)
+                self.info('exception during graph')
 
         clinicaltrial['main_keywords'] = list(main_keywords)
         clinicaltrial['related_kws'] = list(related_kws)
