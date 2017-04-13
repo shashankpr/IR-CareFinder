@@ -23,7 +23,7 @@
 
 <!-- Title and search box -->
 <header class='jumbotron'>
-    <h1 class='title'>Carefinder</h1>
+    <h1 class='title'>Best Care-finder</h1>
     <div class='search-box-container'>
         <input type='text' class='search-box' placeholder='Search' autofocus ng-model='query'
                ng-change='delayedSearch(0)'>
@@ -53,14 +53,17 @@
                 <br>
                 <!-- Show contact info if available-->
                 <div ng-if="result.contactExists">
-                    <h3>Contact information: </h3>
-                    <h4>{{result.contact.phone}}</h4>
-                    <h4>{{result.contact.twitter}}</h4>
-                    <h4>{{result.contact.facebook}}</h4>
+                    <h4>Contact information: </h4>
+                    <h5>{{result.contact.phone}}</h5>
+                    <h5><a href="https://twitter.com/@{{result.contact.twitter}}">{{result.contact.twitter}}</a></h5>
+                    <h5>{{result.contact.facebook}}</h5>
+                    <br/>
                 </div>
+
+                Matching clinical trails: ({{result.totalCount}})
             </div>
 
-            <table class="table custom-table">
+            <!-- <table class="table custom-table">
                 <caption>All matching clinical trails ({{result.totalCount}}).</caption>
                 <thead>
                 <tr>
@@ -88,7 +91,7 @@
 
             <div ng-if="result.isTrial">
                 <h2>Clinical trail</h2>
-            </div>
+            </div> -->
 
             <!--{{ result}}-->
         </article>
